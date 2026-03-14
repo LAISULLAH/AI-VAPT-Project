@@ -12,6 +12,7 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://laisullah.github.io"
+    "https://laisullah.github.io/AI-VAPT-Project"
 ]
 
 # Enable CORS
