@@ -12,3 +12,4 @@ services:
         value: 3.10.12
       - key: PYTHONUNBUFFERED
         value: true
+        python-nmap==0.7.1
