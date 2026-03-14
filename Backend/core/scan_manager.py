@@ -1,6 +1,5 @@
 import asyncio
 import uuid
-import time
 from datetime import datetime
 from typing import Dict, List, Optional
 import logging
@@ -8,8 +7,7 @@ import logging
 # Import your core modules
 from core.service_fingerprint import ServiceFingerprinter
 from core.cve_correlation import CVECorrelator
-from core.osint_logger import OSINTCollector
-from core.port_scan import port_scan
+from core.osint_module import OSINTCollector
 from core.scanner1 import predict_vulnerabilities
 
 # Setup logging
@@ -46,14 +44,10 @@ def start_scan(target: str, profile: str = "default") -> str:
     }
     
     logger.info(f"Scan {scan_id} queued for target: {target}")
-    
-    # In a real async system, you'd spawn a background task here
-    # For now, we'll just return the ID and expect the caller to run the scan
-    
     return scan_id
 
 
-def run_scan(scan_id: str, target: str) -> Dict:
+async def run_scan(scan_id: str, target: str) -> Dict:  # 👈 ADDED 'async'
     """
     Run the complete scan pipeline (blocking)
     
@@ -70,6 +64,7 @@ def run_scan(scan_id: str, target: str) -> Dict:
     if scan_id in SCAN_STORE:
         SCAN_STORE[scan_id]["status"] = "running"
         SCAN_STORE[scan_id]["progress"] = 10
+        SCAN_STORE[scan_id]["start_time"] = datetime.now().isoformat()
     
     try:
         # Initialize results structure
@@ -83,6 +78,7 @@ def run_scan(scan_id: str, target: str) -> Dict:
             "osint": {},
             "risk_summary": {},
             "attack_path": [],
+            "attack_explanation": {},
             "meta": {
                 "scan_profile": "default",
                 "cve_api_configured": True
@@ -95,9 +91,8 @@ def run_scan(scan_id: str, target: str) -> Dict:
             SCAN_STORE[scan_id]["progress"] = 20
             SCAN_STORE[scan_id]["status_detail"] = "Port scanning..."
         
-        # Run port scan (using your port_scan function)
-        # This should return list of open ports with service info
-        open_ports = asyncio.run(_run_port_scan(target))
+        # 👈 FIXED: Removed asyncio.run(), using await directly
+        open_ports = await _run_port_scan(target)
         scan_result["port_scan"]["services"] = open_ports
         scan_result["port_scan"]["total_ports"] = len(open_ports)
         
@@ -118,8 +113,8 @@ def run_scan(scan_id: str, target: str) -> Dict:
             ip = service.get('ip', target)
             port = service.get('port')
             
-            # Get detailed fingerprint
-            service_info = asyncio.run(fingerprinter.fingerprint_service(ip, port))
+            # 👈 FIXED: Removed asyncio.run(), using await directly
+            service_info = await fingerprinter.fingerprint_service(ip, port)
             
             # Merge with port scan info
             service_info.update({
@@ -147,10 +142,11 @@ def run_scan(scan_id: str, target: str) -> Dict:
         # Get CVEs for each service
         for service in fingerprinted_services:
             if service.get('version') and service.get('service_name'):
-                cves = asyncio.run(cve_correlator.correlate_service_cves(
+                # 👈 FIXED: Removed asyncio.run(), using await directly
+                cves = await cve_correlator.correlate_service_cves(
                     service['service_name'],
                     service['version']
-                ))
+                )
                 service['cves'] = cves
                 service['exploit_weight'] = cve_correlator.calculate_exploit_weight(cves)
         
@@ -162,7 +158,8 @@ def run_scan(scan_id: str, target: str) -> Dict:
         
         # Initialize OSINT collector
         osint_collector = OSINTCollector()
-        osint_data = asyncio.run(osint_collector.collect_osint(target))
+        # 👈 FIXED: Removed asyncio.run(), using await directly
+        osint_data = await osint_collector.collect_osint(target)
         scan_result["osint"] = osint_data
         
         # STEP 5: Vulnerability Detection & Risk Scoring (Progress: 85% -> 95%)
@@ -203,6 +200,13 @@ def run_scan(scan_id: str, target: str) -> Dict:
         # Generate attack path
         attack_path = _generate_attack_path(fingerprinted_services, all_vulnerabilities)
         scan_result["attack_path"] = attack_path
+        
+        # Generate attack explanation
+        scan_result["attack_explanation"] = _generate_attack_explanation(
+            fingerprinted_services, 
+            all_vulnerabilities,
+            target
+        )
         
         # Add end time
         scan_result["end_time"] = datetime.now().isoformat()
@@ -414,6 +418,8 @@ def _generate_attack_path(services: List[Dict], vulnerabilities: List[Dict]) -> 
             attack_paths.append("SQL injection for data extraction")
         elif "XSS" in vuln.get('type', ''):
             attack_paths.append("Cross-site scripting for session hijacking")
+        elif "SSH" in vuln.get('type', ''):
+            attack_paths.append("SSH credential brute-forcing")
     
     # Remove duplicates and limit
     unique_paths = []
@@ -424,9 +430,30 @@ def _generate_attack_path(services: List[Dict], vulnerabilities: List[Dict]) -> 
     return unique_paths[:5]
 
 
+def _generate_attack_explanation(services: List[Dict], vulnerabilities: List[Dict], target: str) -> Dict:
+    """Generate attacker view explanation"""
+    high_exposure_services = [s for s in services if s.get('exposure_level') == 'HIGH']
+    
+    reasoning = []
+    for service in high_exposure_services[:3]:
+        port = service.get('port')
+        service_name = service.get('service_name', 'unknown')
+        reasoning.append(f"Service on port {port} has high exposure, increasing attack likelihood.")
+    
+    if any(v.get('severity') == 'CRITICAL' for v in vulnerabilities):
+        reasoning.append("Critical vulnerabilities present, immediate exploitation possible.")
+    
+    return {
+        "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+        "reasoning": reasoning[:5]
+    }
+
+
 # For testing locally
 if __name__ == "__main__":
-    # Test the run_scan function
-    scan_id = start_scan("example.com")
-    result = run_scan(scan_id, "example.com")
-    print(f"Scan completed with risk score: {result['risk_summary']['score']}")
+    async def test():
+        scan_id = start_scan("example.com")
+        result = await run_scan(scan_id, "example.com")
+        print(f"Scan completed with risk score: {result['risk_summary']['score']}")
+    
+    asyncio.run(test())
