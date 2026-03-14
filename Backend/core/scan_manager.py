@@ -12,10 +12,11 @@ from core.scanner1 import predict_vulnerabilities
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SCAN_STORE = {}
+SCAN_STORE: Dict = {}
 
 
 def start_scan(target: str, profile: str = "default") -> str:
+
     scan_id = str(uuid.uuid4())
 
     SCAN_STORE[scan_id] = {
@@ -53,9 +54,7 @@ async def run_scan(scan_id: str, target: str) -> Dict:
             "attack_path": []
         }
 
-        # ---------------------------
-        # STEP 1 — PORT SCAN
-        # ---------------------------
+        # ---------------- PORT SCAN ----------------
 
         SCAN_STORE[scan_id]["progress"] = 20
 
@@ -66,9 +65,7 @@ async def run_scan(scan_id: str, target: str) -> Dict:
             "services": ports
         }
 
-        # ---------------------------
-        # STEP 2 — SERVICE FINGERPRINT
-        # ---------------------------
+        # ---------------- SERVICE FINGERPRINT ----------------
 
         SCAN_STORE[scan_id]["progress"] = 40
 
@@ -81,7 +78,10 @@ async def run_scan(scan_id: str, target: str) -> Dict:
             ip = service.get("ip", target)
             port = service["port"]
 
-            info = await fingerprinter.fingerprint_service(ip, port)
+            try:
+                info = await fingerprinter.fingerprint_service(ip, port)
+            except Exception:
+                info = {}
 
             info.update(service)
 
@@ -89,9 +89,7 @@ async def run_scan(scan_id: str, target: str) -> Dict:
 
         result["services"] = services
 
-        # ---------------------------
-        # STEP 3 — CVE CORRELATION
-        # ---------------------------
+        # ---------------- CVE CORRELATION ----------------
 
         SCAN_STORE[scan_id]["progress"] = 60
 
@@ -106,7 +104,10 @@ async def run_scan(scan_id: str, target: str) -> Dict:
 
             if name and version:
 
-                cves = await cve_correlator.correlate_service_cves(name, version)
+                try:
+                    cves = await cve_correlator.correlate_service_cves(name, version)
+                except Exception:
+                    cves = []
 
                 for cve in cves:
 
@@ -120,31 +121,30 @@ async def run_scan(scan_id: str, target: str) -> Dict:
                         "service": name
                     })
 
-        # ---------------------------
-        # STEP 4 — OSINT
-        # ---------------------------
+        # ---------------- OSINT ----------------
 
         SCAN_STORE[scan_id]["progress"] = 75
 
-        osint = OSINTCollector()
+        try:
+            osint = OSINTCollector()
+            result["osint"] = await osint.collect_osint(target)
+        except Exception:
+            result["osint"] = {}
 
-        result["osint"] = await osint.collect_osint(target)
-
-        # ---------------------------
-        # STEP 5 — ML VULNERABILITIES
-        # ---------------------------
+        # ---------------- AI VULNS ----------------
 
         SCAN_STORE[scan_id]["progress"] = 90
 
-        ai_vulns = predict_vulnerabilities(target, services)
+        try:
+            ai_vulns = predict_vulnerabilities(target, services)
+        except Exception:
+            ai_vulns = []
 
         vulnerabilities.extend(ai_vulns)
 
         result["vulnerabilities"] = vulnerabilities
 
-        # ---------------------------
-        # RISK SUMMARY
-        # ---------------------------
+        # ---------------- RISK ----------------
 
         result["risk_summary"] = _calculate_risk_summary(vulnerabilities)
 
@@ -160,7 +160,7 @@ async def run_scan(scan_id: str, target: str) -> Dict:
 
     except Exception as e:
 
-        logger.error(str(e))
+        logger.error(f"Scan failed: {e}")
 
         SCAN_STORE[scan_id]["status"] = "failed"
         SCAN_STORE[scan_id]["error"] = str(e)
@@ -184,7 +184,6 @@ async def _run_port_scan(target: str) -> List[Dict]:
             )
 
             writer.close()
-
             await writer.wait_closed()
 
             open_ports.append({
@@ -195,7 +194,7 @@ async def _run_port_scan(target: str) -> List[Dict]:
                 "ip": target
             })
 
-        except:
+        except Exception:
             pass
 
     return open_ports
@@ -204,22 +203,12 @@ async def _run_port_scan(target: str) -> List[Dict]:
 def _service_from_port(port):
 
     services = {
-        21: "ftp",
-        22: "ssh",
-        25: "smtp",
-        53: "dns",
-        80: "http",
-        110: "pop3",
-        139: "netbios",
-        143: "imap",
-        443: "https",
-        445: "smb",
-        3389: "rdp",
-        3306: "mysql",
-        8080: "http-proxy"
+        21:"ftp",22:"ssh",25:"smtp",53:"dns",
+        80:"http",110:"pop3",139:"netbios",143:"imap",
+        443:"https",445:"smb",3389:"rdp",3306:"mysql",8080:"http-proxy"
     }
 
-    return services.get(port, "unknown")
+    return services.get(port,"unknown")
 
 
 def _cvss_to_severity(score):
@@ -238,17 +227,10 @@ def _cvss_to_severity(score):
 
 def _calculate_risk_summary(vulns):
 
-    summary = {
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-    }
+    summary = {"critical":0,"high":0,"medium":0,"low":0}
 
     for v in vulns:
-
         s = v.get("severity","LOW").lower()
-
         if s in summary:
             summary[s]+=1
 
@@ -266,22 +248,22 @@ def _calculate_risk_summary(vulns):
 
 def _generate_attack_path(services, vulns):
 
-    paths = []
+    paths=[]
 
     for s in services[:3]:
 
-        p = s["port"]
+        p=s["port"]
 
-        if p == 22:
+        if p==22:
             paths.append("SSH brute force attack")
 
-        elif p == 80:
+        elif p==80:
             paths.append("HTTP web attack")
 
-        elif p == 443:
+        elif p==443:
             paths.append("SSL attack")
 
-        elif p == 3306:
+        elif p==3306:
             paths.append("Database exploitation")
 
     if any("SQL" in v.get("type","") for v in vulns):
