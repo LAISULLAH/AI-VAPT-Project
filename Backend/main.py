@@ -7,17 +7,28 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add CORS middleware to handle preflight requests
+# Allowed frontend origins
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "https://laisullah.github.io"
+]
+
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Include API routes
 app.include_router(scan_router)
 
+# Root endpoint
 @app.get("/")
 def root():
     return {
@@ -26,6 +37,9 @@ def root():
         "version": "1.0.0"
     }
 
+# Health check endpoint
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok"
+    }
