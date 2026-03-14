@@ -11,8 +11,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ServiceFingerprinter:
-    def __init__(self, timeout: int = 5):
+    def __init__(self, timeout: int = 5, max_workers: int = 10):  # 🔥 FIXED: Added max_workers parameter
         self.timeout = timeout
+        self.max_workers = max_workers  # Store it for potential use
         self.banner_patterns = {
             'ssh': re.compile(r'SSH-(\d+\.\d+)-([^\s]+)'),
             'http': re.compile(r'Server:\s*(.+)', re.IGNORECASE),
@@ -21,6 +22,7 @@ class ServiceFingerprinter:
             'postgresql': re.compile(r'PostgreSQL', re.IGNORECASE),
         }
 
+    # 🔥 REST OF YOUR CODE REMAINS EXACTLY THE SAME
     async def fingerprint_service(self, ip: str, port: int, protocol: str = 'tcp') -> Dict:
         """Fingerprint a single service on given IP and port"""
         try:
