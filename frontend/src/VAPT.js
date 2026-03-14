@@ -710,10 +710,16 @@ const Dashboard = () => {
     setJsonResponse(null);
 
     try {
-      const response = await fetch(`https://ai-vapt-project.onrender.com/scan/full?target=${domain}`, {
-        method: 'POST',
-        headers: { 'accept': 'application/json' }
-      });
+    const response = await fetch(
+  `https://ai-vapt-project.onrender.com/scan/full?target=${domain}`,
+  {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    }
+  }
+);
 
       if (!response.ok) throw new Error(`Scan failed: ${response.status}`);
 
