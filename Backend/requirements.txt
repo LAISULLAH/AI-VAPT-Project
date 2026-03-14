@@ -47,3 +47,4 @@ psutil==5.9.6
 # ASGI Server Requirements
 click==8.1.7
 h11==0.14.0
+python-nmap==0.7.1
