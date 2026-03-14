@@ -10,9 +10,7 @@ app = FastAPI(
 # Allowed frontend origins
 origins = [
     "http://localhost:3000",
-    "http://localhost:3001",
     "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
     "https://laisullah.github.io"
 ]
 
@@ -40,6 +38,4 @@ def root():
 # Health check endpoint
 @app.get("/health")
 def health():
-    return {
-        "status": "ok"
-    }
+    return {"status": "ok"}
