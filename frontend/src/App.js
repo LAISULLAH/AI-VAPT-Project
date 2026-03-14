@@ -1747,10 +1747,10 @@ const Dashboard = () => {
 
     try {
       const API_BASE = "https://ai-vapt-project.onrender.com";
-
-const response = await fetch(`${API_BASE}/scan/full?target=${domain}`, {
+      const response = await fetch(`${API_BASE}/scan/full?target=${domain}`, {
   method: "POST",
   headers: {
+    "Content-Type": "application/json",
     "accept": "application/json"
   }
 });
