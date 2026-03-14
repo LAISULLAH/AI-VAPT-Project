@@ -710,7 +710,7 @@ const Dashboard = () => {
     setJsonResponse(null);
 
     try {
-      const response = await fetch(`https://ai-vapt-backend.onrender.com/scan/full?target=${domain}`, {
+      const response = await fetch(`https://ai-vapt-project.onrender.com/scan/full?target=${domain}`, {
   method: 'POST',
   headers: { 'accept': 'application/json' }
   });
