@@ -1746,11 +1746,14 @@ const Dashboard = () => {
     setJsonResponse(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/scan/full?target=${domain}`, {
-        method: 'POST',
-        headers: { 'accept': 'application/json' }
-      });
+      const API_BASE = "https://ai-vapt-project.onrender.com";
 
+const response = await fetch(`${API_BASE}/scan/full?target=${domain}`, {
+  method: "POST",
+  headers: {
+    "accept": "application/json"
+  }
+});
       if (!response.ok) throw new Error(`Scan failed: ${response.status}`);
 
       const data = await response.json();
