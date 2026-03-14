@@ -7,7 +7,7 @@ import logging
 # Import your core modules
 from core.service_fingerprint import ServiceFingerprinter
 from core.cve_correlation import CVECorrelator
-from core.osint_module import OSINTCollector
+from osint_logger import OSINTCollector
 from core.scanner1 import predict_vulnerabilities
 
 # Setup logging
