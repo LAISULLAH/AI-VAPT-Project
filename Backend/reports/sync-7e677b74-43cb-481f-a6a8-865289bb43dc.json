@@ -1,0 +1,124 @@
+{
+  "scan_id": "sync-7e677b74-43cb-481f-a6a8-865289bb43dc",
+  "target": "indighub.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 1,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "test.indighub.com",
+        "dns_ips": [
+          "3.110.204.126"
+        ],
+        "url": "https://test.indighub.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Development / QA",
+        "importance": "HIGH",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 533,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 0,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 1
+    },
+    "duration_sec": 9.57
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-14T05:08:28.601288",
+    "domain": "indighub.com",
+    "whois": {
+      "domain_name": "INDIGHUB.COM",
+      "registrar": "NAMECHEAP INC",
+      "organization": "Privacy service provided by Withheld for Privacy ehf",
+      "country": "IS",
+      "creation_date": "2026-01-25 17:47:14+00:00",
+      "expiration_date": "2027-01-25 17:47:14+00:00",
+      "name_servers": [
+        "DNS1.REGISTRAR-SERVERS.COM",
+        "DNS2.REGISTRAR-SERVERS.COM"
+      ]
+    },
+    "crtsh": [
+      "aman.indighub.com",
+      "musaib.indighub.com",
+      "museb.indighub.com",
+      "test.indighub.com",
+      "typing.indighub.com",
+      "www.indighub.com"
+    ],
+    "dns": {
+      "A": [],
+      "MX": [
+        "10 eforward1.registrar-servers.com.",
+        "10 eforward2.registrar-servers.com.",
+        "10 eforward3.registrar-servers.com.",
+        "15 eforward4.registrar-servers.com.",
+        "20 eforward5.registrar-servers.com."
+      ],
+      "NS": [
+        "dns1.registrar-servers.com.",
+        "dns2.registrar-servers.com."
+      ],
+      "TXT": [
+        "\"v=spf1 include:spf.efwd.registrar-servers.com ~all\""
+      ]
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='indighub.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x00000274B0A6DE50>: Failed to resolve 'indighub.com' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "ssl": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "osint_score": 55,
+    "trust_level": "MEDIUM"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 20,
+    "engine_version": "1.1.0"
+  }
+}

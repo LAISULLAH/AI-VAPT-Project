@@ -1,0 +1,102 @@
+{
+  "scan_id": "sync-5e2232bf-c681-40ef-9e49-32a9a176f988",
+  "target": "mail.ljku.edu.in",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 0,
+    "wildcard_dns": false,
+    "subdomains": [],
+    "summary": {
+      "public": 0,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 22.43
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-11T06:45:17.566034",
+    "domain": "mail.ljku.edu.in",
+    "whois": {
+      "domain_name": "ljku.edu.in",
+      "registrar": "ERNET India",
+      "organization": "None",
+      "country": "IN",
+      "creation_date": "2019-11-11 05:26:11.756000+00:00",
+      "expiration_date": "2029-11-11 05:26:11.756000+00:00",
+      "name_servers": [
+        "ns05.domaincontrol.com",
+        "ns06.domaincontrol.com"
+      ]
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Read timed out. (read timeout=12)"
+    },
+    "dns": {
+      "A": [
+        "120.72.91.156"
+      ],
+      "MX": [
+        "20 mail.ljku.edu.in.",
+        "10 mail.ljku.edu.in."
+      ],
+      "NS": [],
+      "TXT": [
+        "\"v=spf1 ip4:120.72.91.156 include:_spf.google.com ~all\"",
+        "\"156.91.72.120.in-addr.arpa.\""
+      ]
+    },
+    "http": {
+      "status": 200,
+      "server": "nginx",
+      "security_headers": {
+        "HSTS": false,
+        "CSP": false,
+        "XFO": true
+      }
+    },
+    "ssl": {
+      "issuer": {
+        "countryName": "GB",
+        "organizationName": "Sectigo Limited",
+        "commonName": "Sectigo Public Server Authentication CA DV R36"
+      },
+      "subject": {
+        "commonName": "mail.ljku.edu.in"
+      },
+      "not_before": "Oct 16 00:00:00 2025 GMT",
+      "not_after": "Nov 16 23:59:59 2026 GMT"
+    },
+    "osint_score": 65,
+    "trust_level": "MEDIUM"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 105,
+    "engine_version": "1.1.0"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "scan_id": "sync-5a701129-07d2-4e39-859c-4ad401c814ea",
+  "target": "nokia.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 0,
+    "wildcard_dns": false,
+    "subdomains": [],
+    "summary": {
+      "public": 0,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 0.19
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-16T04:59:20.116778",
+    "domain": "nokia.com",
+    "whois": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Max retries exceeded with url: /?q=%25.nokia.com&output=json (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000020ED93B0C20>: Failed to resolve 'crt.sh' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "dns": {
+      "A": [],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='nokia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000020ED8A93250>: Failed to resolve 'nokia.com' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "ssl": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "osint_score": 0,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 21,
+    "engine_version": "1.1.0"
+  }
+}

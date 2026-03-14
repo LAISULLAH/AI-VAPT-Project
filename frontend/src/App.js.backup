@@ -1,0 +1,1237 @@
+import React, { useState, useEffect } from 'react';
+import Chart from 'react-apexcharts';
+import './App.css';
+
+// ═════════════════════════════════════════════════════════════
+// LEGAL PAGE COMPONENT
+// ═════════════════════════════════════════════════════════════
+const LegalPage = ({ onAccept }) => {
+  return (
+    <div className="app-wrapper">
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-title">⚠️ Security Warning</div>
+            <div className="auth-subtitle">Enterprise Security Operations</div>
+          </div>
+
+          <div style={{ marginBottom: '1.5rem', maxHeight: '300px', overflowY: 'auto' }}>
+            <h3 style={{ color: '#41b3a3', marginBottom: '1rem', fontSize: '1rem' }}>
+              Authorized Access Only
+            </h3>
+            <p style={{ color: '#7a8fa3', lineHeight: '1.6', marginBottom: '1rem', fontSize: '0.9rem' }}>
+              This system is for authorized use only. All activity is monitored and logged. 
+              By accessing this system, you acknowledge that you have read, understood, and 
+              agree to comply with all security policies and legal requirements.
+            </p>
+
+            <h4 style={{ color: '#ffb703', marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.95rem' }}>
+              Key Policies:
+            </h4>
+            <ul style={{ color: '#7a8fa3', paddingLeft: '1.5rem', fontSize: '0.85rem', lineHeight: '1.8' }}>
+              <li>All data access is monitored and logged</li>
+              <li>Unauthorized access is strictly prohibited</li>
+              <li>You must maintain confidentiality of all information</li>
+              <li>Violation of this policy will result in immediate action</li>
+              <li>Your account will be audited for compliance</li>
+            </ul>
+
+            <p style={{ color: '#ff4444', marginTop: '1.5rem', fontWeight: '600', fontSize: '0.9rem' }}>
+              ⚠️ ALL ACTIVITY IS LOGGED AND MONITORED
+            </p>
+          </div>
+
+          <button onClick={onAccept} className="auth-button">
+            Accept & Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════
+// LOGIN PAGE COMPONENT
+// ═════════════════════════════════════════════════════════════
+const LoginPage = ({ onLogin }) => {
+  return (
+    <div className="app-wrapper">
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-title">🔐 CyberSIO</div>
+            <div className="auth-subtitle">Enterprise SOC Platform</div>
+          </div>
+
+          <div className="auth-form">
+            <div className="form-group">
+              <label className="form-label">Username</label>
+              <input type="text" placeholder="Enter your username" className="form-input" />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input type="password" placeholder="Enter your password" className="form-input" />
+            </div>
+
+            <button onClick={onLogin} className="auth-button">
+              Sign In
+            </button>
+          </div>
+
+          <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#7a8fa3', fontSize: '0.85rem' }}>
+            Protected by enterprise security policies
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════
+// DASHBOARD COMPONENT
+// ═════════════════════════════════════════════════════════════
+const Dashboard = () => {
+  const [scanResult, setScanResult] = useState(null);
+  const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('tSIEM');
+  const [targetInput, setTargetInput] = useState('');
+  const [error, setError] = useState('');
+  const [jsonResponse, setJsonResponse] = useState(null);
+
+  const processScanData = (scanResponse) => {
+    if (!scanResponse) return null;
+
+    const vulns = scanResponse.vulnerabilities || [];
+    const ports = scanResponse.port_scan?.services || [];
+    const subdomains = scanResponse.subdomain_enum?.subdomains || [];
+
+    // Count vulnerabilities by severity
+    const criticalCount = vulns.filter(v => v.severity === 'CRITICAL').length;
+    const highCount = vulns.filter(v => v.severity === 'HIGH').length;
+    const mediumCount = vulns.filter(v => v.severity === 'MEDIUM').length;
+    const lowCount = vulns.filter(v => v.severity === 'LOW').length;
+
+    // Count open/closed ports
+    const openPorts = ports.filter(p => p.state === 'open').length;
+    const closedPorts = ports.filter(p => p.state === 'closed').length;
+    const filteredPorts = ports.filter(p => p.state === 'filtered').length;
+
+    // Count subdomains by importance
+    const publicSubdomains = scanResponse.subdomain_enum?.summary?.public || 0;
+    const restrictedSubdomains = scanResponse.subdomain_enum?.summary?.restricted || 0;
+    const dnsOnlySubdomains = scanResponse.subdomain_enum?.summary?.dns_only || 0;
+
+    // Create vulnerability trend (simulated 7-day trend)
+    const trend = [
+      Math.max(0, criticalCount - 2),
+      Math.max(0, criticalCount - 1),
+      criticalCount,
+      Math.max(0, criticalCount - 1),
+      criticalCount,
+      Math.max(0, criticalCount + 1),
+      criticalCount
+    ];
+
+    return {
+      vulnerabilityTrend: {
+        series: [
+          { name: 'Critical', data: trend },
+          { name: 'High', data: trend.map((v, i) => v + highCount) },
+          { name: 'Medium', data: trend.map(v => mediumCount) }
+        ],
+        categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      },
+      owaspMapping: {
+        series: vulns.length > 0 ? [vulns.length, 0, 0, 0, 0, 0] : [0, 0, 0, 0, 0, 0],
+        categories: ['Config Issues', 'Exposure', 'Headers', 'Crypto', 'Access', 'Other']
+      },
+      networkVulnerabilities: {
+        series: [criticalCount, highCount, mediumCount],
+        labels: ['Critical', 'High', 'Medium']
+      },
+      hostsScanned: {
+        series: [publicSubdomains, restrictedSubdomains, dnsOnlySubdomains, 0],
+        labels: ['Public', 'Restricted', 'DNS Only', 'Offline']
+      },
+      webVulnerabilities: {
+        series: [openPorts, closedPorts, filteredPorts],
+        labels: ['Open', 'Closed', 'Filtered']
+      }
+    };
+  };
+
+  const handleStartScan = async () => {
+    alert('Starting a scan may take several minutes. Please be patient and do not close the application.');
+    if (!targetInput.trim()) {
+      setError('Please enter a target domain or IP');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setJsonResponse(null);
+
+    try {
+      // GET request to backend API
+      console.log(`Starting scan for target: ${targetInput}>>>>>>>>>>>>`);
+      const response = await fetch(`http://127.0.0.1:8000/scan/full?target=${targetInput}`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Response received from backend:', response);
+      if (response.status !== 200) {
+        throw new Error(`Scan failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      setJsonResponse(data);
+      setScanResult(data);
+      const processed = processScanData(data);
+      setChartData(processed);
+    } catch (err) {
+      setError(err.message || 'Unable to start scan. Make sure the backend is running at http://127.0.0.1:8000');
+      console.log('Backend unavailable, using demo mode');
+      // For demo, load sample data
+      //loadDemoData();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadDemoData = () => {
+    // Demo data that matches the structure provided
+    const demoScan = {
+      "scan_id": "sync-demo-001",
+      "target": targetInput || "demo.com",
+      "vulnerabilities": [
+        { "type": "HTTP exposed", "severity": "CRITICAL", "confidence": 0.9, "port": 80, "source": "CONFIG_SCAN", "recommendation": "Redirect to HTTPS" },
+        { "type": "HTTPS exposed", "severity": "CRITICAL", "confidence": 0.8, "port": 443, "source": "CONFIG_SCAN", "recommendation": "Implement security headers" },
+        { "type": "Missing X-Frame-Options", "severity": "HIGH", "confidence": 0.7, "port": 25, "source": "CONFIG_SCAN", "recommendation": "Apply security hardening" },
+        { "type": "Missing CSP Header", "severity": "HIGH", "confidence": 0.7, "port": 80, "source": "CONFIG_SCAN", "recommendation": "Implement CSP" }
+      ],
+      "port_scan": {
+        "services": [
+          { "port": 25, "service": "smtp", "state": "open", "exposure_level": "HIGH", "attack_surface": "NETWORK" },
+          { "port": 80, "service": "http", "state": "open", "exposure_level": "HIGH", "attack_surface": "WEB" },
+          { "port": 443, "service": "https", "state": "open", "exposure_level": "HIGH", "attack_surface": "WEB" },
+          { "port": 465, "service": "smtps", "state": "closed", "exposure_level": "LOW", "attack_surface": "NETWORK" }
+        ]
+      },
+      "subdomain_enum": {
+        "subdomains": [
+          { "subdomain": "www.demo.com", "status": 200, "alive": true },
+          { "subdomain": "cdn.demo.com", "status": 403, "alive": true }
+        ],
+        "summary": { "public": 2, "restricted": 1, "dns_only": 0 }
+      },
+      "risk_summary": { "score": 100, "severity": "CRITICAL" }
+    };
+    
+    setJsonResponse(demoScan);
+    setScanResult(demoScan);
+    const processed = processScanData(demoScan);
+    setChartData(processed);
+  };
+
+  useEffect(() => {
+    if (page === 'dashboard' && !chartData) {
+      // Auto-load demo on dashboard view
+      setTimeout(() => loadDemoData(), 500);
+    }
+  }, [page]);
+
+  if (page === 'legal') {
+    return (
+      <div className="app-wrapper">
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="auth-header">
+              <div className="auth-title">⚠️ Security Warning</div>
+              <div className="auth-subtitle">Enterprise Security Operations</div>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem', maxHeight: '300px', overflowY: 'auto' }}>
+              <h3 style={{ color: '#41b3a3', marginBottom: '1rem', fontSize: '1rem' }}>
+                Authorized Access Only
+              </h3>
+              <p style={{ color: '#7a8fa3', lineHeight: '1.6', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                This system is for authorized use only. All activity is monitored and logged. 
+                By accessing this system, you acknowledge that you have read, understood, and 
+                agree to comply with all security policies and legal requirements.
+              </p>
+
+              <h4 style={{ color: '#ffb703', marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.95rem' }}>
+                Key Policies:
+              </h4>
+              <ul style={{ color: '#7a8fa3', paddingLeft: '1.5rem', fontSize: '0.85rem', lineHeight: '1.8' }}>
+                <li>All data access is monitored and logged</li>
+                <li>Unauthorized access is strictly prohibited</li>
+                <li>You must maintain confidentiality of all information</li>
+                <li>Violation of this policy will result in immediate action</li>
+                <li>Your account will be audited for compliance</li>
+              </ul>
+
+              <p style={{ color: '#ff4444', marginTop: '1.5rem', fontWeight: '600', fontSize: '0.9rem' }}>
+                ⚠️ ALL ACTIVITY IS LOGGED AND MONITORED
+              </p>
+            </div>
+
+            <button onClick={() => setPage('login')} className="auth-button">
+              Accept & Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (page === 'login') {
+    return (
+      <div className="app-wrapper">
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="auth-header">
+              <div className="auth-title">🔐 CyberSIO</div>
+              <div className="auth-subtitle">Enterprise SOC Platform</div>
+            </div>
+
+            <div className="auth-form">
+              <div className="form-group">
+                <label className="form-label">Username</label>
+                <input type="text" placeholder="Enter your username" className="form-input" />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input type="password" placeholder="Enter your password" className="form-input" />
+              </div>
+
+              <button onClick={() => setPage('dashboard')} className="auth-button">
+                Sign In
+              </button>
+            </div>
+
+            <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#7a8fa3', fontSize: '0.85rem' }}>
+              Protected by enterprise security policies
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (page === 'dashboard') {
+    if (loading) {
+      return (
+        <div className="app-wrapper">
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <div className="loading-text">Scanning target...</div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show scan input if no results yet
+    if (!scanResult) {
+      return (
+        <div className="app-wrapper">
+          <nav className="top-nav">
+            <div className="nav-left">
+              <div className="nav-logo">
+                <span>🛡️</span>
+                <span>CyberSIO</span>
+              </div>
+            </div>
+            <div className="nav-right">
+              <div className="user-avatar" title="User Profile">AB</div>
+            </div>
+          </nav>
+
+          <div className="dashboard-container" style={{ paddingTop: '4rem' }}>
+            <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+              <h1 style={{ color: '#41b3a3', marginBottom: '2rem', fontSize: '2rem' }}>
+                🎯 AI VAPT Scanner
+              </h1>
+              <p style={{ color: '#7a8fa3', marginBottom: '2rem' }}>
+                Enter a domain or IP address to start a comprehensive security assessment
+              </p>
+              
+              {error && (
+                <div style={{
+                  background: 'rgba(255, 68, 68, 0.1)',
+                  border: '1px solid rgba(255, 68, 68, 0.3)',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  marginBottom: '1.5rem',
+                  color: '#ff4444'
+                }}>
+                  {error}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', alignItems: 'stretch' }}>
+                <input
+                  type="text"
+                  placeholder="e.g., example.com or 192.168.1.1"
+                  value={targetInput}
+                  onChange={(e) => setTargetInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleStartScan()}
+                  className="form-input"
+                  style={{ flex: 1, padding: '0.9rem 1.2rem', fontSize: '1rem' }}
+                />
+                <button
+                  onClick={handleStartScan}
+                  className="auth-button"
+                  style={{ padding: '0 2rem', minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {loading ? '⏳ Scanning...' : '🚀 Scan'}
+                </button>
+              </div>
+
+              {/* JSON Response Display */}
+              {jsonResponse && (
+                <div style={{
+                  background: 'rgba(13, 27, 42, 0.6)',
+                  border: '1px solid rgba(65, 179, 163, 0.2)',
+                  borderRadius: '8px',
+                  padding: '1.5rem',
+                  marginBottom: '1.5rem',
+                  maxHeight: '400px',
+                  overflowY: 'auto'
+                }}>
+                  <div style={{ color: '#41b3a3', marginBottom: '0.75rem', fontWeight: '600', fontSize: '0.9rem' }}>
+                    📄 Full Scan JSON:
+                  </div>
+                  <pre style={{
+                    color: '#d0d8e8',
+                    fontSize: '0.8rem',
+                    lineHeight: '1.5',
+                    margin: 0,
+                    fontFamily: '"Courier New", monospace',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word'
+                  }}>
+                    {JSON.stringify(jsonResponse, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setTargetInput('demo.com');
+                  //loadDemoData();
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(65, 179, 163, 0.3)',
+                  color: '#41b3a3',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  marginTop: '1rem'
+                }}
+              >
+                📊 Load Demo Data
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Display scan results
+    const vulns = scanResult.vulnerabilities || [];
+    const ports = scanResult.port_scan?.services || [];
+    const subdomains = scanResult.subdomain_enum?.subdomains || [];
+
+    return (
+      <div className="app-wrapper">
+        <nav className="top-nav">
+          <div className="nav-left">
+            <div className="nav-logo">
+              <span>🛡️</span>
+              <span>CyberSIO</span>
+            </div>
+            <div className="nav-tabs">
+              {['Overview', 'Vulnerabilities', 'Ports', 'Subdomains'].map((tab) => (
+                <button
+                  key={tab}
+                  className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="nav-right">
+            <div className="nav-icons">
+              <div className="nav-icon" title="Back to Scan">
+                <button
+                  onClick={() => { setScanResult(null); setChartData(null); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                >
+                  ↩️
+                </button>
+              </div>
+              <div className="user-avatar" title="User Profile">AB</div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Scan Summary Header */}
+        <div className="dashboard-container">
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(20, 35, 60, 0.8), rgba(13, 27, 42, 0.8))',
+            border: '1px solid rgba(65, 179, 163, 0.15)',
+            borderRadius: '12px',
+            padding: '2rem',
+            marginBottom: '2rem'
+          }}>
+            <h1 style={{ color: '#41b3a3', marginBottom: '0.5rem' }}>
+              🔍 {scanResult.target}
+            </h1>
+            <p style={{ color: '#7a8fa3', marginBottom: '1.5rem' }}>
+              Scan ID: <code style={{ color: '#d0d8e8' }}>{scanResult.scan_id?.substring(0, 12)}...</code> | 
+              Duration: <strong>{scanResult.meta?.duration_sec}s</strong> | 
+              Risk: <strong style={{ color: scanResult.risk_summary?.severity === 'CRITICAL' ? '#ff4444' : '#ffb703' }}>
+                {scanResult.risk_summary?.severity}
+              </strong> |
+              Score: <strong>{scanResult.risk_summary?.score}</strong>
+            </p>
+
+            {/* Key Metrics with Charts */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1.5rem'
+            }}>
+              {/* Critical Vulnerabilities Gauge */}
+              <div style={{ background: 'rgba(255, 68, 68, 0.1)', padding: '1.5rem', borderRadius: '8px', border: '1px solid rgba(255, 68, 68, 0.2)' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ color: '#ff4444', fontSize: '2rem', fontWeight: 'bold' }}>
+                    {vulns.filter(v => v.severity === 'CRITICAL').length}
+                  </div>
+                  <div style={{ color: '#7a8fa3', fontSize: '0.9rem' }}>Critical Issues</div>
+                </div>
+                <Chart
+                  type="radialBar"
+                  series={[Math.round((vulns.filter(v => v.severity === 'CRITICAL').length / Math.max(vulns.length, 1)) * 100)]}
+                  options={{
+                    chart: { toolbar: { show: false }, sparkline: { enabled: true } },
+                    colors: ['#ff4444'],
+                    plotOptions: {
+                      radialBar: {
+                        startAngle: -90,
+                        endAngle: 90,
+                        hollow: { size: '70%' },
+                        dataLabels: { show: false }
+                      }
+                    }
+                  }}
+                  height={120}
+                />
+              </div>
+
+              {/* High Vulnerabilities Gauge */}
+              <div style={{ background: 'rgba(255, 183, 3, 0.1)', padding: '1.5rem', borderRadius: '8px', border: '1px solid rgba(255, 183, 3, 0.2)' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ color: '#ffb703', fontSize: '2rem', fontWeight: 'bold' }}>
+                    {vulns.filter(v => v.severity === 'HIGH').length}
+                  </div>
+                  <div style={{ color: '#7a8fa3', fontSize: '0.9rem' }}>High Issues</div>
+                </div>
+                <Chart
+                  type="radialBar"
+                  series={[Math.round((vulns.filter(v => v.severity === 'HIGH').length / Math.max(vulns.length, 1)) * 100)]}
+                  options={{
+                    chart: { toolbar: { show: false }, sparkline: { enabled: true } },
+                    colors: ['#ffb703'],
+                    plotOptions: {
+                      radialBar: {
+                        startAngle: -90,
+                        endAngle: 90,
+                        hollow: { size: '70%' },
+                        dataLabels: { show: false }
+                      }
+                    }
+                  }}
+                  height={120}
+                />
+              </div>
+
+              {/* Open Ports Chart */}
+              <div style={{ background: 'rgba(37, 99, 235, 0.1)', padding: '1.5rem', borderRadius: '8px', border: '1px solid rgba(37, 99, 235, 0.2)' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ color: '#2563eb', fontSize: '2rem', fontWeight: 'bold' }}>
+                    {ports.filter(p => p.state === 'open').length}
+                  </div>
+                  <div style={{ color: '#7a8fa3', fontSize: '0.9rem' }}>Open Ports</div>
+                </div>
+                <Chart
+                  type="radialBar"
+                  series={[Math.round((ports.filter(p => p.state === 'open').length / Math.max(ports.length, 1)) * 100)]}
+                  options={{
+                    chart: { toolbar: { show: false }, sparkline: { enabled: true } },
+                    colors: ['#2563eb'],
+                    plotOptions: {
+                      radialBar: {
+                        startAngle: -90,
+                        endAngle: 90,
+                        hollow: { size: '70%' },
+                        dataLabels: { show: false }
+                      }
+                    }
+                  }}
+                  height={120}
+                />
+              </div>
+
+              {/* Subdomains Count */}
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1.5rem', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ color: '#10b981', fontSize: '2rem', fontWeight: 'bold' }}>
+                    {subdomains.length}
+                  </div>
+                  <div style={{ color: '#7a8fa3', fontSize: '0.9rem' }}>Subdomains</div>
+                </div>
+                <Chart
+                  type="radialBar"
+                  series={[subdomains.length > 0 ? 100 : 0]}
+                  options={{
+                    chart: { toolbar: { show: false }, sparkline: { enabled: true } },
+                    colors: ['#10b981'],
+                    plotOptions: {
+                      radialBar: {
+                        startAngle: -90,
+                        endAngle: 90,
+                        hollow: { size: '70%' },
+                        dataLabels: { show: false }
+                      }
+                    }
+                  }}
+                  height={120}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Charts */}
+          {activeTab === 'Overview' && chartData && (
+            <div className="dashboard-grid">
+              {/* Main metrics row */}
+              <div className="dashboard-row two-columns">
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <div className="card-title">📊 Vulnerability Trend</div>
+                  </div>
+                  <div className="card-body">
+                    <Chart
+                      type="area"
+                      series={chartData.vulnerabilityTrend.series}
+                      options={{
+                        chart: { type: 'area', toolbar: { show: false }, background: 'transparent' },
+                        colors: ['#ff4444', '#ffb703', '#2563eb'],
+                        xaxis: { categories: chartData.vulnerabilityTrend.categories, labels: { style: { colors: '#7a8fa3' } } },
+                        yaxis: { labels: { style: { colors: '#7a8fa3' } } },
+                        grid: { borderColor: 'rgba(65, 179, 163, 0.1)' },
+                        stroke: { curve: 'smooth', width: 2 },
+                        fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0 } },
+                        legend: { labels: { colors: '#7a8fa3' } }
+                      }}
+                      height={300}
+                    />
+                  </div>
+                </div>
+
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <div className="card-title">🎯 Severity Distribution</div>
+                  </div>
+                  <div className="card-body">
+                    <Chart
+                      type="bar"
+                      series={[{
+                        name: 'Count',
+                        data: [
+                          vulns.filter(v => v.severity === 'CRITICAL').length,
+                          vulns.filter(v => v.severity === 'HIGH').length,
+                          vulns.filter(v => v.severity === 'MEDIUM').length,
+                          vulns.filter(v => v.severity === 'LOW').length
+                        ]
+                      }]}
+                      options={{
+                        chart: { type: 'bar', toolbar: { show: false }, background: 'transparent', sparkline: { enabled: false } },
+                        colors: ['#ff4444'],
+                        xaxis: { 
+                          categories: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
+                          labels: { style: { colors: '#7a8fa3' } }
+                        },
+                        yaxis: { labels: { style: { colors: '#7a8fa3' } } },
+                        grid: { borderColor: 'rgba(65, 179, 163, 0.1)' },
+                        tooltip: { theme: 'dark' },
+                        dataLabels: { enabled: true }
+                      }}
+                      height={300}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Risk metrics */}
+              <div className="dashboard-row three-columns">
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <div className="card-title">🌐 Network Issues</div>
+                  </div>
+                  <div className="card-body">
+                    {chartData && (
+                      <div className="donut-container">
+                        <Chart
+                          type="donut"
+                          series={chartData.networkVulnerabilities.series}
+                          options={{
+                            colors: ['#ff4444', '#ffb703', '#2563eb'],
+                            labels: chartData.networkVulnerabilities.labels,
+                            chart: { toolbar: { show: false } },
+                            legend: { show: false }
+                          }}
+                          height={220}
+                        />
+                        <div className="donut-legend">
+                          {chartData.networkVulnerabilities.labels.map((label, i) => (
+                            <div key={label} className="legend-item">
+                              <div className="legend-color" style={{ backgroundColor: ['#ff4444', '#ffb703', '#2563eb'][i] }}></div>
+                              <div className="legend-label">{label}</div>
+                              <div className="legend-value">{chartData.networkVulnerabilities.series[i]}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <div className="card-title">🖥️ Port Status Analysis</div>
+                  </div>
+                  <div className="card-body">
+                    {chartData && (
+                      <div className="donut-container">
+                        <Chart
+                          type="donut"
+                          series={chartData.webVulnerabilities.series}
+                          options={{
+                            colors: ['#10b981', '#ffb703', '#ff4444'],
+                            labels: chartData.webVulnerabilities.labels,
+                            chart: { toolbar: { show: false } },
+                            legend: { show: false }
+                          }}
+                          height={220}
+                        />
+                        <div className="donut-legend">
+                          {chartData.webVulnerabilities.labels.map((label, i) => (
+                            <div key={label} className="legend-item">
+                              <div className="legend-color" style={{ backgroundColor: ['#10b981', '#ffb703', '#ff4444'][i] }}></div>
+                              <div className="legend-label">{label}</div>
+                              <div className="legend-value">{chartData.webVulnerabilities.series[i]}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <div className="card-title">🌍 Subdomain Classification</div>
+                  </div>
+                  <div className="card-body">
+                    {chartData && (
+                      <div className="donut-container">
+                        <Chart
+                          type="donut"
+                          series={chartData.hostsScanned.series}
+                          options={{
+                            colors: ['#10b981', '#ffb703', '#2563eb', '#ff4444'],
+                            labels: chartData.hostsScanned.labels,
+                            chart: { toolbar: { show: false } },
+                            legend: { show: false }
+                          }}
+                          height={220}
+                        />
+                        <div className="donut-legend">
+                          {chartData.hostsScanned.labels.map((label, i) => (
+                            <div key={label} className="legend-item">
+                              <div className="legend-color" style={{ backgroundColor: ['#10b981', '#ffb703', '#2563eb', '#ff4444'][i] }}></div>
+                              <div className="legend-label">{label}</div>
+                              <div className="legend-value">{chartData.hostsScanned.series[i]}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Analysis - Top Issues */}
+              <div className="dashboard-card" style={{ gridColumn: '1 / -1' }}>
+                <div className="card-header">
+                  <div className="card-title">⚠️ Top Critical Issues</div>
+                </div>
+                <div style={{ position: 'relative', zIndex: 1, overflowX: 'auto' }}>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    color: '#d0d8e8',
+                    fontSize: '0.9rem'
+                  }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.1)' }}>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Vulnerability</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Severity</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Port</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Confidence</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Recommendation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vulns.slice(0, 5).map((vuln, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.05)' }}>
+                          <td style={{ padding: '1rem' }}>{vuln.type}</td>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{
+                              background: vuln.severity === 'CRITICAL' ? 'rgba(255, 68, 68, 0.2)' : 'rgba(255, 183, 3, 0.2)',
+                              color: vuln.severity === 'CRITICAL' ? '#ff4444' : '#ffb703',
+                              padding: '0.3rem 0.7rem',
+                              borderRadius: '4px',
+                              fontSize: '0.85rem',
+                              fontWeight: '600'
+                            }}>
+                              {vuln.severity}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1rem' }}>{vuln.port || '-'}</td>
+                          <td style={{ padding: '1rem' }}>{Math.round((vuln.confidence || 0) * 100)}%</td>
+                          <td style={{ padding: '1rem', fontSize: '0.85rem', color: '#41b3a3' }}>{vuln.recommendation || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Port Risk Analysis */}
+              <div className="dashboard-card" style={{ gridColumn: '1 / -1' }}>
+                <div className="card-header">
+                  <div className="card-title">🔌 Port Risk Analysis</div>
+                </div>
+                <div style={{ position: 'relative', zIndex: 1, overflowX: 'auto' }}>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    color: '#d0d8e8',
+                    fontSize: '0.9rem'
+                  }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.1)' }}>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Port</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Service</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>State</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Exposure Level</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Attack Surface</th>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Risk Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ports.map((port, i) => {
+                        const riskScore = port.state === 'open' ? (port.exposure_level === 'HIGH' ? 95 : 65) : 20;
+                        return (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.05)' }}>
+                            <td style={{ padding: '1rem', fontWeight: '600' }}>{port.port}</td>
+                            <td style={{ padding: '1rem' }}>{port.service}</td>
+                            <td style={{ padding: '1rem' }}>
+                              <span style={{
+                                background: port.state === 'open' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+                                color: port.state === 'open' ? '#10b981' : '#9ca3af',
+                                padding: '0.3rem 0.7rem',
+                                borderRadius: '4px',
+                                fontSize: '0.85rem',
+                                fontWeight: '600'
+                              }}>
+                                {port.state?.toUpperCase()}
+                              </span>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <span style={{
+                                background: port.exposure_level === 'HIGH' ? 'rgba(255, 68, 68, 0.2)' : 'rgba(37, 99, 235, 0.2)',
+                                color: port.exposure_level === 'HIGH' ? '#ff4444' : '#2563eb',
+                                padding: '0.3rem 0.7rem',
+                                borderRadius: '4px',
+                                fontSize: '0.85rem',
+                                fontWeight: '600'
+                              }}>
+                                {port.exposure_level}
+                              </span>
+                            </td>
+                            <td style={{ padding: '1rem' }}>{port.attack_surface}</td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <div style={{
+                                  background: riskScore > 80 ? '#ff4444' : riskScore > 60 ? '#ffb703' : '#10b981',
+                                  width: '100%',
+                                  height: '4px',
+                                  borderRadius: '2px'
+                                }}></div>
+                                <span style={{ color: riskScore > 80 ? '#ff4444' : riskScore > 60 ? '#ffb703' : '#10b981', fontWeight: '600' }}>
+                                  {riskScore}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Subdomain Details */}
+              <div className="dashboard-card" style={{ gridColumn: '1 / -1' }}>
+                <div className="card-header">
+                  <div className="card-title">🌐 Subdomain Enumeration Results</div>
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                  gap: '1rem',
+                  position: 'relative',
+                  zIndex: 1
+                }}>
+                  {subdomains.length > 0 ? subdomains.map((sub, i) => (
+                    <div key={i} style={{
+                      background: 'rgba(65, 179, 163, 0.08)',
+                      border: '1px solid rgba(65, 179, 163, 0.15)',
+                      borderRadius: '8px',
+                      padding: '1rem'
+                    }}>
+                      <div style={{ color: '#41b3a3', fontWeight: '600', marginBottom: '0.5rem' }}>
+                        {sub.alive ? '✅' : '❌'} {sub.subdomain}
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: '#7a8fa3', marginBottom: '0.75rem' }}>
+                        Status: <span style={{ color: '#d0d8e8' }}>{sub.status}</span>
+                      </div>
+                      {sub.dns_ips && sub.dns_ips.length > 0 && (
+                        <div style={{ fontSize: '0.85rem', color: '#7a8fa3' }}>
+                          IPs: <span style={{ color: '#d0d8e8' }}>{sub.dns_ips.join(', ')}</span>
+                        </div>
+                      )}
+                    </div>
+                  )) : (
+                    <div style={{ color: '#7a8fa3', padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                      No subdomains discovered
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Vulnerabilities Tab */}
+          {activeTab === 'Vulnerabilities' && vulns.length > 0 && (
+            <div className="dashboard-card">
+              <div className="card-header">
+                <div className="card-title">🔍 Detected Vulnerabilities ({vulns.length})</div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 1, overflowX: 'auto' }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  color: '#d0d8e8',
+                  fontSize: '0.9rem'
+                }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.1)' }}>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Type</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Severity</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Port</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Confidence</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Recommendation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {vulns.map((vuln, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.05)' }}>
+                        <td style={{ padding: '1rem' }}>{vuln.type}</td>
+                        <td style={{ padding: '1rem' }}>
+                          <span style={{
+                            background: vuln.severity === 'CRITICAL' ? 'rgba(255, 68, 68, 0.2)' : 'rgba(255, 183, 3, 0.2)',
+                            color: vuln.severity === 'CRITICAL' ? '#ff4444' : '#ffb703',
+                            padding: '0.3rem 0.7rem',
+                            borderRadius: '4px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600'
+                          }}>
+                            {vuln.severity}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem' }}>{vuln.port || '-'}</td>
+                        <td style={{ padding: '1rem' }}>{Math.round((vuln.confidence || 0) * 100)}%</td>
+                        <td style={{ padding: '1rem', fontSize: '0.85rem' }}>{vuln.recommendation || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Ports Tab */}
+          {activeTab === 'Ports' && ports.length > 0 && (
+            <div className="dashboard-card">
+              <div className="card-header">
+                <div className="card-title">🔌 Port Scan Results ({ports.length})</div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 1, overflowX: 'auto' }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  color: '#d0d8e8',
+                  fontSize: '0.9rem'
+                }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.1)' }}>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Port</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Service</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>State</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Exposure</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#7a8fa3', fontWeight: '500' }}>Attack Surface</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ports.map((port, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid rgba(65, 179, 163, 0.05)' }}>
+                        <td style={{ padding: '1rem', fontWeight: '600' }}>{port.port}</td>
+                        <td style={{ padding: '1rem' }}>{port.service}</td>
+                        <td style={{ padding: '1rem' }}>
+                          <span style={{
+                            background: port.state === 'open' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+                            color: port.state === 'open' ? '#10b981' : '#9ca3af',
+                            padding: '0.3rem 0.7rem',
+                            borderRadius: '4px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600'
+                          }}>
+                            {port.state?.toUpperCase()}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem' }}>{port.exposure_level}</td>
+                        <td style={{ padding: '1rem' }}>{port.attack_surface}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Subdomains Tab */}
+          {activeTab === 'Subdomains' && subdomains.length > 0 && (
+            <div className="dashboard-grid">
+              {subdomains.map((sub, i) => (
+                <div key={i} className="dashboard-card" style={{ gridColumn: '1 / -1' }}>
+                  <div className="card-header">
+                    <div className="card-title">
+                      {sub.alive ? '✅' : '❌'} {sub.subdomain}
+                    </div>
+                    <div style={{ color: '#7a8fa3', fontSize: '0.85rem' }}>
+                      Status: {sub.status} | Response: {sub.response_time_ms}ms
+                    </div>
+                  </div>
+                  <div style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '1.5rem'
+                  }}>
+                    <div>
+                      <div style={{ color: '#7a8fa3', fontSize: '0.85rem', marginBottom: '0.5rem' }}>URL</div>
+                      <div style={{ color: '#41b3a3' }}>{sub.url}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: '#7a8fa3', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Category</div>
+                      <div style={{ color: '#d0d8e8' }}>{sub.category}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: '#7a8fa3', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Importance</div>
+                      <div style={{ color: '#d0d8e8' }}>{sub.importance}</div>
+                    </div>
+                    {sub.dns_ips && (
+                      <div>
+                        <div style={{ color: '#7a8fa3', fontSize: '0.85rem', marginBottom: '0.5rem' }}>IPs</div>
+                        <div style={{ color: '#d0d8e8', fontSize: '0.85rem' }}>
+                          {sub.dns_ips.join(', ')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // If loading, show loader
+  if (loading) {
+    return (
+      <div className="app-wrapper">
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <div className="loading-text">Scanning target...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show scan input if no results
+  if (!scanResult) {
+    return (
+      <div className="app-wrapper">
+        <nav className="top-nav">
+          <div className="nav-left">
+            <div className="nav-logo">
+              <span>🛡️</span>
+              <span>CyberSIO</span>
+            </div>
+          </div>
+          <div className="nav-right">
+            <div className="user-avatar" title="User Profile">AB</div>
+          </div>
+        </nav>
+
+        <div className="dashboard-container" style={{ paddingTop: '4rem' }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+            <h1 style={{ color: '#41b3a3', marginBottom: '2rem', fontSize: '2rem' }}>
+              🎯 AI VAPT Scanner
+            </h1>
+            <p style={{ color: '#7a8fa3', marginBottom: '2rem' }}>
+              Enter a domain or IP address to start a comprehensive security assessment
+            </p>
+            
+            {error && (
+              <div style={{
+                background: 'rgba(255, 68, 68, 0.1)',
+                border: '1px solid rgba(255, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1.5rem',
+                color: '#ff4444'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', alignItems: 'stretch' }}>
+              <input
+                type="text"
+                placeholder="e.g., example.com or 192.168.1.1"
+                value={targetInput}
+                onChange={(e) => setTargetInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleStartScan()}
+                className="form-input"
+                style={{ flex: 1, padding: '0.9rem 1.2rem', fontSize: '1rem' }}
+              />
+              <button
+                onClick={handleStartScan}
+                className="auth-button"
+                style={{ padding: '0 2rem', minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                {loading ? '⏳ Scanning...' : '🚀 Scan'}
+              </button>
+            </div>
+
+            {/* JSON Response Display */}
+            {jsonResponse && (
+              <div style={{
+                background: 'rgba(13, 27, 42, 0.6)',
+                border: '1px solid rgba(65, 179, 163, 0.2)',
+                borderRadius: '8px',
+                padding: '1.5rem',
+                marginBottom: '1.5rem',
+                maxHeight: '400px',
+                overflowY: 'auto'
+              }}>
+                <div style={{ color: '#41b3a3', marginBottom: '0.75rem', fontWeight: '600', fontSize: '0.9rem' }}>
+                  📄 API Response (JSON):
+                </div>
+                <pre style={{
+                  color: '#d0d8e8',
+                  fontSize: '0.8rem',
+                  lineHeight: '1.5',
+                  margin: 0,
+                  fontFamily: '"Courier New", monospace',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word'
+                }}>
+                  {JSON.stringify(jsonResponse, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                setTargetInput('demo.com');
+                loadDemoData();
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(65, 179, 163, 0.3)',
+                color: '#41b3a3',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                marginTop: '1rem'
+              }}
+            >
+              📊 Load Demo Data
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return renderDashboard();
+};
+
+// ═════════════════════════════════════════════════════════════
+// MAIN APP COMPONENT
+// ═════════════════════════════════════════════════════════════
+function App() {
+  const [stage, setStage] = useState('legal');
+
+  return (
+    <div className="app-wrapper">
+      {stage === 'legal' && <LegalPage onAccept={() => setStage('login')} />}
+      {stage === 'login' && <LoginPage onLogin={() => setStage('dashboard')} />}
+      {stage === 'dashboard' && <Dashboard />}
+    </div>
+  );
+}
+
+export default App;

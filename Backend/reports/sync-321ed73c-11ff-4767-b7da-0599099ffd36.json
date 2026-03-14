@@ -1,0 +1,339 @@
+{
+  "scan_id": "sync-321ed73c-11ff-4767-b7da-0599099ffd36",
+  "target": "nokia.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 10,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "help.nokia.com",
+        "dns_ips": [
+          "40.85.139.101"
+        ],
+        "url": "https://help.nokia.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1007,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "auth.nokia.com",
+        "dns_ips": [
+          "172.66.40.107",
+          "172.66.43.149",
+          "2606:4700:90d6:8ade:6ca7:834:1207:da71"
+        ],
+        "url": "https://auth.nokia.com",
+        "alive": true,
+        "status": 403,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Authentication Service",
+        "importance": "HIGH",
+        "technology_hint": "Cloudflare CDN",
+        "response_time_ms": 417,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      },
+      {
+        "subdomain": "mobile.nokia.com",
+        "dns_ips": [
+          "2600:140f::173d:f712",
+          "2600:140f::173d:f711",
+          "23.61.247.17",
+          "23.61.247.18"
+        ],
+        "url": "https://mobile.nokia.com",
+        "alive": true,
+        "status": 503,
+        "meaning": "Service exists but temporarily unavailable",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 477,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "dev.nokia.com",
+        "dns_ips": [
+          "23.211.154.23",
+          "2600:140f:1e00:189::ac7",
+          "2600:140f:1e00:18e::ac7"
+        ],
+        "url": "https://dev.nokia.com",
+        "alive": true,
+        "status": 401,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Development / QA",
+        "importance": "HIGH",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 1014,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      },
+      {
+        "subdomain": "www2.nokia.com",
+        "dns_ips": [
+          "23.12.220.243"
+        ],
+        "url": "https://www2.nokia.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 1463,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www.nokia.com",
+        "dns_ips": [
+          "2600:140f:1e00:197::2098",
+          "2600:140f:1e00:188::2098",
+          "104.120.66.185"
+        ],
+        "url": "https://www.nokia.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 893,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "api.nokia.com",
+        "dns_ips": [
+          "34.232.254.255",
+          "52.203.235.136",
+          "18.211.121.35"
+        ],
+        "url": null,
+        "alive": true,
+        "status": "DNS_ONLY",
+        "meaning": "DNS record exists but no public web service",
+        "category": "API / Backend",
+        "importance": "MEDIUM",
+        "technology_hint": "AWS",
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "DNS entry exists without public service exposure",
+          "recommended_checks": [
+            "DNS record changes",
+            "Unexpected service exposure"
+          ]
+        }
+      },
+      {
+        "subdomain": "qa.nokia.com",
+        "dns_ips": [
+          "2600:140f:b800:180::ac7",
+          "23.211.154.23",
+          "2600:140f:b800:1a4::ac7"
+        ],
+        "url": "https://qa.nokia.com",
+        "alive": true,
+        "status": 401,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Development / QA",
+        "importance": "HIGH",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 2438,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      },
+      {
+        "subdomain": "support.nokia.com",
+        "dns_ips": [
+          "2600:140f:1e00:1a5::1ebd",
+          "104.120.64.227",
+          "2600:140f:1e00:1ae::1ebd"
+        ],
+        "url": "https://support.nokia.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 1132,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "support2.nokia.com",
+        "dns_ips": [
+          "135.245.1.54"
+        ],
+        "url": null,
+        "alive": true,
+        "status": "DNS_ONLY",
+        "meaning": "DNS record exists but no public web service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "DNS entry exists without public service exposure",
+          "recommended_checks": [
+            "DNS record changes",
+            "Unexpected service exposure"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 6,
+      "restricted": 3,
+      "dns_only": 2,
+      "high_importance": 3
+    },
+    "duration_sec": 5.75
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-16T05:58:53.784061",
+    "domain": "nokia.com",
+    "whois": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Max retries exceeded with url: /?q=%25.nokia.com&output=json (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000019183720C20>: Failed to resolve 'crt.sh' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "dns": {
+      "A": [],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='nokia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000019182E02FD0>: Failed to resolve 'nokia.com' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "ssl": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "osint_score": 0,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 1439,
+    "engine_version": "1.1.0"
+  }
+}

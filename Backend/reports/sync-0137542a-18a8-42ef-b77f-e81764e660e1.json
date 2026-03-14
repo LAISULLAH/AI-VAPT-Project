@@ -1,0 +1,315 @@
+{
+  "scan_id": "sync-0137542a-18a8-42ef-b77f-e81764e660e1",
+  "target": "apache.org",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 4,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "auth-dev.apache.org",
+        "dns_ips": [
+          "34.209.55.39"
+        ],
+        "url": "https://auth-dev.apache.org",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Development / QA",
+        "importance": "HIGH",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 2287,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      },
+      {
+        "subdomain": "auth.apache.org",
+        "dns_ips": [
+          "52.89.232.241"
+        ],
+        "url": "https://auth.apache.org",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Authentication Service",
+        "importance": "HIGH",
+        "technology_hint": "AWS",
+        "response_time_ms": 1623,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      },
+      {
+        "subdomain": "www.apache.org",
+        "dns_ips": [
+          "2a04:4e42::644",
+          "151.101.2.132"
+        ],
+        "url": "https://www.apache.org",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 337,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "mail.apache.org",
+        "dns_ips": [
+          "116.203.246.181",
+          "2a01:4f8:c2c:d4aa::1"
+        ],
+        "url": "https://mail.apache.org",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 4710,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 2,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 2
+    },
+    "duration_sec": 18.69
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "HTTP exposed",
+      "severity": "HIGH",
+      "confidence": 0.8,
+      "evidence": "HTTP exposed; Missing security headers",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "MEDIUM",
+      "confidence": 0.6,
+      "evidence": "HTTPS exposed; Check SSL/TLS configuration",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-26T11:37:54.754944",
+    "domain": "apache.org",
+    "whois": {
+      "domain_name": "apache.org",
+      "registrar": "NAMECHEAP INC",
+      "organization": "Redacted for Privacy Purposes",
+      "country": "US",
+      "creation_date": "1995-04-11 04:00:00+00:00",
+      "expiration_date": "2029-04-12 04:00:00+00:00",
+      "name_servers": [
+        "ns-1139.awsdns-14.org",
+        "ns-1955.awsdns-52.co.uk",
+        "ns-303.awsdns-37.com",
+        "ns-558.awsdns-05.net"
+      ]
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Read timed out. (read timeout=12)"
+    },
+    "dns": {
+      "A": [
+        "151.101.2.132"
+      ],
+      "MX": [
+        "10 mx1-ec2-va.apache.org.",
+        "10 mx1-he-de.apache.org.",
+        "10 mx2-ec2-sy.apache.org."
+      ],
+      "NS": [
+        "ns-1139.awsdns-14.org.",
+        "ns-1955.awsdns-52.co.uk.",
+        "ns-303.awsdns-37.com.",
+        "ns-558.awsdns-05.net."
+      ],
+      "TXT": [
+        "\"atlassian-domain-verification=ymLFB7Wz8ScIJsja5lQgqHkFZGayJH7z0M3DAUwmeTFBvxJWz7rs9OqateFxBIb4\"",
+        "\"spf2.0/pra ?all\"",
+        "\"_globalsign-domain-verification=VPemhDee0EKRXi0IPzeSUrn849jHevrjIaTeDYOTZ4\"",
+        "\"MS=E03FCF4BFDA6010D863CDB04B4F156E4C480ACA5\"",
+        "\"gradle-verification=L6JP9L6FV7OI2DLLG5N9515VA3Q6Q\"",
+        "\"google-site-verification=y9Wki74vQ-HO4aXrJ-TzmPvLf8itBqrQTPjyAHktuMo\"",
+        "\"v=spf1 include:_spf.apache.org -all\""
+      ]
+    },
+    "http": {
+      "status": 200,
+      "server": "Apache",
+      "security_headers": {
+        "HSTS": true,
+        "CSP": true,
+        "XFO": false
+      }
+    },
+    "ssl": {
+      "issuer": {
+        "countryName": "US",
+        "organizationName": "Let's Encrypt",
+        "commonName": "R12"
+      },
+      "subject": {
+        "commonName": "apache.org"
+      },
+      "not_before": "Feb 14 00:22:42 2026 GMT",
+      "not_after": "May 15 00:22:41 2026 GMT"
+    },
+    "osint_score": 80,
+    "trust_level": "HIGH"
+  },
+  "fingerprinted_services": [
+    {
+      "port": 80,
+      "protocol": "tcp",
+      "service": "http",
+      "state": "open",
+      "reason": "syn-ack",
+      "exposure_level": "HIGH",
+      "attack_surface": "WEB",
+      "reasoning": [
+        "Web service reachable"
+      ],
+      "service_name": "http",
+      "version": null,
+      "banner": null,
+      "http_headers": null,
+      "ssl_cert": null,
+      "cves": [],
+      "exploit_weight": 0.0
+    },
+    {
+      "port": 443,
+      "protocol": "tcp",
+      "service": "https",
+      "state": "open",
+      "reason": "syn-ack",
+      "exposure_level": "HIGH",
+      "attack_surface": "WEB",
+      "reasoning": [
+        "Web service reachable"
+      ],
+      "service_name": "https",
+      "version": null,
+      "banner": null,
+      "http_headers": null,
+      "ssl_cert": null,
+      "cves": [],
+      "exploit_weight": 0.0
+    }
+  ],
+  "risk_summary": {
+    "score": 30,
+    "severity": "MEDIUM",
+    "possible_attacks": [
+      "HTTP exposed"
+    ],
+    "risk_context": "Trusted organization with moderate security gaps"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Service on port 443 has high exposure, increasing attack likelihood.",
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 80 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 101,
+    "engine_version": "1.2.0",
+    "cve_api_configured": false
+  }
+}

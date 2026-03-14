@@ -1,0 +1,91 @@
+{
+  "scan_id": "sync-426bf33b-bb0c-4a1e-95bc-91aebb7d176f",
+  "target": "www.bing.com/ck/a?!",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 0,
+    "wildcard_dns": false,
+    "subdomains": [],
+    "summary": {
+      "public": 0,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 0.16
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-11T06:47:36.170076",
+    "domain": "www.bing.com/ck/a?!",
+    "whois": {
+      "domain_name": "BING.COM",
+      "registrar": "MarkMonitor, Inc.",
+      "organization": "Microsoft Corporation",
+      "country": "US",
+      "creation_date": "1996-01-29 05:00:00+00:00",
+      "expiration_date": "2027-01-30 05:00:00+00:00",
+      "name_servers": [
+        "DNS1.P09.NSONE.NET",
+        "DNS2.P09.NSONE.NET",
+        "DNS3.P09.NSONE.NET",
+        "DNS4.P09.NSONE.NET",
+        "NS1-204.AZURE-DNS.COM",
+        "NS2-204.AZURE-DNS.NET",
+        "NS3-204.AZURE-DNS.ORG",
+        "NS4-204.AZURE-DNS.INFO"
+      ]
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Read timed out. (read timeout=12)"
+    },
+    "dns": {
+      "A": [],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "status": 204,
+      "server": null,
+      "security_headers": {
+        "HSTS": false,
+        "CSP": false,
+        "XFO": false
+      }
+    },
+    "ssl": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "osint_score": 30,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 20,
+    "engine_version": "1.1.0"
+  }
+}

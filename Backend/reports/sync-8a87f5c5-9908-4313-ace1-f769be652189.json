@@ -1,0 +1,321 @@
+{
+  "scan_id": "sync-8a87f5c5-9908-4313-ace1-f769be652189",
+  "target": "ljku.edu.in",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 2,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "mail.ljku.edu.in",
+        "dns_ips": [
+          "120.72.91.156"
+        ],
+        "url": "https://mail.ljku.edu.in",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 402,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www.ljku.edu.in",
+        "dns_ips": [
+          "103.180.186.234"
+        ],
+        "url": "https://www.ljku.edu.in",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1347,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 2,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 14.85
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 22,
+        "protocol": "tcp",
+        "service": "ssh",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "SQL Injection (Boolean Based)",
+      "parameter": "id",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "owasp": "A03:2021 - Injection",
+      "cwe": "CWE-89",
+      "evidence": "Response length changed compared to baseline"
+    },
+    {
+      "type": "SSH exposed",
+      "severity": "MEDIUM",
+      "confidence": 0.5,
+      "evidence": "SSH service exposed to internet",
+      "port": 22,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Restrict SSH using IP whitelisting, disable password login, and enforce key-based authentication."
+    },
+    {
+      "type": "HTTP exposed",
+      "severity": "HIGH",
+      "confidence": 0.8,
+      "evidence": "HTTP exposed; Missing security headers",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "MEDIUM",
+      "confidence": 0.6,
+      "evidence": "HTTPS exposed; Check SSL/TLS configuration",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-26T11:29:03.772810",
+    "domain": "ljku.edu.in",
+    "whois": {
+      "domain_name": "ljku.edu.in",
+      "registrar": "ERNET India",
+      "organization": "None",
+      "country": "IN",
+      "creation_date": "2019-11-11 05:26:11.756000+00:00",
+      "expiration_date": "2029-11-11 05:26:11.756000+00:00",
+      "name_servers": [
+        "ns05.domaincontrol.com",
+        "ns06.domaincontrol.com"
+      ]
+    },
+    "crtsh": [
+      "*.ljku.edu.in\nljku.edu.in",
+      "admission.ljku.edu.in",
+      "admissions.ljku.edu.in",
+      "cbl.ljku.edu.in",
+      "cvl.ljku.edu.in",
+      "delivery.nopaperforms.info.ljku.edu.in",
+      "lfa.ljku.edu.in",
+      "ljcvlcbl.ljku.edu.in",
+      "ljku.edu.in\nwww.ljku.edu.in",
+      "mail.ljku.edu.in",
+      "mail.ljku.edu.in\nwww.mail.ljku.edu.in",
+      "phd.ljku.edu.in",
+      "webmail.ljku.edu.in"
+    ],
+    "dns": {
+      "A": [
+        "103.180.186.234"
+      ],
+      "MX": [
+        "5 alt2.aspmx.l.google.com.",
+        "10 alt3.aspmx.l.google.com.",
+        "10 alt4.aspmx.l.google.com.",
+        "1 smtp.google.com.",
+        "1 aspmx.l.google.com.",
+        "5 alt1.aspmx.l.google.com."
+      ],
+      "NS": [
+        "ns05.domaincontrol.com.",
+        "ns06.domaincontrol.com."
+      ],
+      "TXT": [
+        "\"\\009v=spf1 include:_spf.eims.co.in include:_spf.google.com include:1399882ba.spf2.netcorecloud.net -all\"",
+        "\"4el5pf0v03oalqq1m43jo9qvk4\"",
+        "\"v=DMARC1; p=none; rua=mailto:dmarc-reports@ljku.edu.in\"",
+        "\"google-site-verification=ztSXHHQ8LBcsGR01YxoSC38rIViEoTm1BxNIDapxM8g\"",
+        "\"v=spf1 include:_spf.eims.co.in include:_spf.google.com ~all\"",
+        "\"v=spf1 include:_spf.google.com ~all\"",
+        "\"k28r7a629dhsd2oq1d4s2hq72a\""
+      ]
+    },
+    "http": {
+      "status": 200,
+      "server": "nginx/1.24.0 (Ubuntu)",
+      "security_headers": {
+        "HSTS": true,
+        "CSP": false,
+        "XFO": false
+      }
+    },
+    "ssl": {
+      "issuer": {
+        "countryName": "US",
+        "stateOrProvinceName": "Arizona",
+        "localityName": "Scottsdale",
+        "organizationName": "GoDaddy.com, Inc.",
+        "organizationalUnitName": "http://certs.godaddy.com/repository/",
+        "commonName": "Go Daddy Secure Certificate Authority - G2"
+      },
+      "subject": {
+        "commonName": "*.ljku.edu.in"
+      },
+      "not_before": "Mar 21 06:41:21 2025 GMT",
+      "not_after": "Apr  6 04:14:18 2026 GMT"
+    },
+    "osint_score": 90,
+    "trust_level": "HIGH"
+  },
+  "fingerprinted_services": [
+    {
+      "port": 22,
+      "protocol": "tcp",
+      "service": "ssh",
+      "state": "open",
+      "reason": "syn-ack",
+      "exposure_level": "HIGH",
+      "attack_surface": "NETWORK",
+      "reasoning": [],
+      "service_name": "ssh",
+      "version": null,
+      "banner": null,
+      "http_headers": null,
+      "ssl_cert": null,
+      "cves": [],
+      "exploit_weight": 0.0
+    },
+    {
+      "port": 80,
+      "protocol": "tcp",
+      "service": "http",
+      "state": "open",
+      "reason": "syn-ack",
+      "exposure_level": "HIGH",
+      "attack_surface": "WEB",
+      "reasoning": [
+        "Web service reachable"
+      ],
+      "service_name": "http",
+      "version": null,
+      "banner": null,
+      "http_headers": null,
+      "ssl_cert": null,
+      "cves": [],
+      "exploit_weight": 0.0
+    },
+    {
+      "port": 443,
+      "protocol": "tcp",
+      "service": "https",
+      "state": "open",
+      "reason": "syn-ack",
+      "exposure_level": "HIGH",
+      "attack_surface": "WEB",
+      "reasoning": [
+        "Web service reachable"
+      ],
+      "service_name": "https",
+      "version": null,
+      "banner": null,
+      "http_headers": null,
+      "ssl_cert": null,
+      "cves": [],
+      "exploit_weight": 0.0
+    }
+  ],
+  "risk_summary": {
+    "score": 60,
+    "severity": "HIGH",
+    "possible_attacks": [
+      "HTTP exposed",
+      "SQL Injection (Boolean Based)"
+    ],
+    "risk_context": "Trusted organization with moderate security gaps"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks",
+    "Database enumeration and data extraction",
+    "SSH brute-force or credential stuffing"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Service on port 443 has high exposure, increasing attack likelihood.",
+      "Service on port 22 has high exposure, increasing attack likelihood.",
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "SSH service exposure allows password brute-force or credential stuffing attempts."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 81,
+    "engine_version": "1.2.0",
+    "cve_api_configured": false
+  }
+}

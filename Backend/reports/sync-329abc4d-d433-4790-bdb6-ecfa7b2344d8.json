@@ -1,0 +1,170 @@
+{
+  "scan_id": "sync-329abc4d-d433-4790-bdb6-ecfa7b2344d8",
+  "target": "darululoomonline.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 1,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "www.darululoomonline.com",
+        "dns_ips": [
+          "15.197.148.33",
+          "3.33.130.190"
+        ],
+        "url": "http://www.darululoomonline.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 138,
+        "tls": {
+          "https_supported": false,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 1,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 7.22
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "HTTP exposed",
+      "severity": "CRITICAL",
+      "confidence": 0.9,
+      "evidence": "HTTP exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "CRITICAL",
+      "confidence": 0.8,
+      "evidence": "HTTPS exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-19T03:46:11.264244",
+    "domain": "darululoomonline.com",
+    "whois": {
+      "domain_name": "DARULULOOMONLINE.COM",
+      "registrar": "GoDaddy.com, LLC",
+      "organization": "Domains By Proxy, LLC",
+      "country": "US",
+      "creation_date": "2024-05-13 18:36:49+00:00",
+      "expiration_date": "2026-05-13 18:36:49+00:00",
+      "name_servers": [
+        "NS77.DOMAINCONTROL.COM",
+        "NS78.DOMAINCONTROL.COM"
+      ]
+    },
+    "crtsh": [
+      "darululoomonline.com",
+      "darululoomonline.com\nwww.darululoomonline.com",
+      "www.darululoomonline.com"
+    ],
+    "dns": {
+      "A": [
+        "3.33.130.190",
+        "15.197.148.33"
+      ],
+      "MX": [],
+      "NS": [
+        "ns77.domaincontrol.com.",
+        "ns78.domaincontrol.com."
+      ],
+      "TXT": []
+    },
+    "http": {
+      "status": 200,
+      "server": null,
+      "security_headers": {
+        "HSTS": false,
+        "CSP": false,
+        "XFO": false
+      }
+    },
+    "ssl": {
+      "error": "_ssl.c:1015: The handshake operation timed out"
+    },
+    "osint_score": 30,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 60,
+    "severity": "HIGH",
+    "possible_attacks": [
+      "HTTP exposed",
+      "HTTPS exposed"
+    ],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "Service on port 443 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 128,
+    "engine_version": "1.1.0"
+  }
+}

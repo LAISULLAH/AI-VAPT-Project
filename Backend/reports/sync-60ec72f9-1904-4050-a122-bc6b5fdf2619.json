@@ -1,0 +1,224 @@
+{
+  "scan_id": "sync-60ec72f9-1904-4050-a122-bc6b5fdf2619",
+  "target": "nokia.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 6,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "mobile.nokia.com",
+        "dns_ips": [
+          "23.53.243.46",
+          "2600:140f:1e00::1737:f5c0",
+          "23.53.243.51",
+          "2600:140f:1e00::1737:f5b0"
+        ],
+        "url": "https://mobile.nokia.com",
+        "alive": true,
+        "status": 503,
+        "meaning": "Service exists but temporarily unavailable",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 1921,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "dev.nokia.com",
+        "dns_ips": [
+          "2600:140f:8a00:187::ac7",
+          "2600:140f:8a00:18c::ac7",
+          "23.53.68.215"
+        ],
+        "url": "https://dev.nokia.com",
+        "alive": true,
+        "status": 401,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Development / QA",
+        "importance": "HIGH",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 2645,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      },
+      {
+        "subdomain": "qa.nokia.com",
+        "dns_ips": [
+          "2600:140f:8a00:187::ac7",
+          "2600:140f:8a00:18c::ac7",
+          "23.53.68.215"
+        ],
+        "url": "https://qa.nokia.com",
+        "alive": true,
+        "status": 401,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Development / QA",
+        "importance": "HIGH",
+        "technology_hint": "Akamai CDN",
+        "response_time_ms": 1854,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "CRITICAL",
+          "reason": "High-value internal or authentication-related service",
+          "recommended_checks": [
+            "Login page availability",
+            "Unexpected response changes",
+            "Authentication failure spikes",
+            "TLS certificate expiry"
+          ]
+        }
+      },
+      {
+        "subdomain": "api.nokia.com",
+        "dns_ips": [
+          "18.211.121.35",
+          "52.203.235.136",
+          "34.232.254.255"
+        ],
+        "url": null,
+        "alive": true,
+        "status": "DNS_ONLY",
+        "meaning": "DNS record exists but no public web service",
+        "category": "API / Backend",
+        "importance": "MEDIUM",
+        "technology_hint": "AWS",
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "DNS entry exists without public service exposure",
+          "recommended_checks": [
+            "DNS record changes",
+            "Unexpected service exposure"
+          ]
+        }
+      },
+      {
+        "subdomain": "support.nokia.com",
+        "dns_ips": [
+          "2600:140f:8a00:188::1ebd",
+          "2600:140f:8a00:18b::1ebd",
+          "23.57.198.191"
+        ],
+        "url": null,
+        "alive": true,
+        "status": "DNS_ONLY",
+        "meaning": "DNS record exists but no public web service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Akamai CDN",
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "DNS entry exists without public service exposure",
+          "recommended_checks": [
+            "DNS record changes",
+            "Unexpected service exposure"
+          ]
+        }
+      },
+      {
+        "subdomain": "www2.nokia.com",
+        "dns_ips": [
+          "23.223.15.153"
+        ],
+        "url": null,
+        "alive": true,
+        "status": "DNS_ONLY",
+        "meaning": "DNS record exists but no public web service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Akamai CDN",
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "DNS entry exists without public service exposure",
+          "recommended_checks": [
+            "DNS record changes",
+            "Unexpected service exposure"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 3,
+      "restricted": 2,
+      "dns_only": 3,
+      "high_importance": 2
+    },
+    "duration_sec": 21.21
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-26T08:38:43.360517",
+    "domain": "nokia.com",
+    "whois": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Max retries exceeded with url: /?q=%25.nokia.com&output=json (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000029270625940>: Failed to resolve 'crt.sh' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "dns": {
+      "A": [],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='nokia.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x000002927080C2D0>: Failed to resolve 'nokia.com' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "ssl": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "osint_score": 0,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 22,
+    "engine_version": "1.1.0"
+  }
+}

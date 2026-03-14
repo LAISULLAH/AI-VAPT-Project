@@ -1,0 +1,99 @@
+{
+  "scan_id": "sync-46a8be12-2b7b-4b0f-92f4-8fc635c2c9a6",
+  "target": "vulnweb.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 1,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "www.vulnweb.com",
+        "dns_ips": [
+          "44.228.249.3"
+        ],
+        "url": "http://www.vulnweb.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 623,
+        "tls": {
+          "https_supported": false,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 1,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 21.73
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "HTTP exposed",
+      "severity": "MEDIUM",
+      "confidence": 0.5,
+      "evidence": "HTTP exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    }
+  ],
+  "osint": {
+    "status": "failed",
+    "error": "No OSINT output | stderr=Traceback (most recent call last):\n  File \"C:\\Users\\bloch\\OneDrive\\Desktop\\AI VAPT\\Backend\\core\\osint_logger.py\", line 9, in <module>\n    import whois\nModuleNotFoundError: No module named 'whois'"
+  },
+  "risk_summary": {
+    "score": 10,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 80 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 78,
+    "engine_version": "1.1.0"
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "scan_id": "sync-7b5aea77-7899-4d97-a70a-d23d0950991c",
+  "target": "ljku.edu.in",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 2,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "mail.ljku.edu.in",
+        "dns_ips": [
+          "120.72.91.156"
+        ],
+        "url": "https://mail.ljku.edu.in",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 3555,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www.ljku.edu.in",
+        "dns_ips": [
+          "103.180.186.234"
+        ],
+        "url": "https://www.ljku.edu.in",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 10400,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 2,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 79.41
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-26T08:34:16.367922",
+    "domain": "ljku.edu.in",
+    "whois": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Max retries exceeded with url: /?q=%25.ljku.edu.in&output=json (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000020E046C5940>: Failed to resolve 'crt.sh' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "dns": {
+      "A": [],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='ljku.edu.in', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000020E048AC2D0>: Failed to resolve 'ljku.edu.in' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "ssl": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "osint_score": 0,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 111,
+    "engine_version": "1.1.0"
+  }
+}

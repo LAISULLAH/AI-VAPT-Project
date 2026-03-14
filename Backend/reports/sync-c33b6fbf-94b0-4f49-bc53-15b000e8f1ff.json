@@ -1,0 +1,453 @@
+{
+  "scan_id": "sync-c33b6fbf-94b0-4f49-bc53-15b000e8f1ff",
+  "target": "darululoomonline.org",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 2,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "www.darululoomonline.org",
+        "dns_ips": [
+          "178.212.35.92"
+        ],
+        "url": "https://www.darululoomonline.org",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 469,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "mail.darululoomonline.org",
+        "dns_ips": [
+          "178.212.35.92"
+        ],
+        "url": "https://mail.darululoomonline.org",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 422,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 2,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 3.92
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 20,
+        "protocol": "tcp",
+        "service": "ftp-data",
+        "state": "closed",
+        "reason": "conn-refused",
+        "exposure_level": "LOW",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 21,
+        "protocol": "tcp",
+        "service": "ftp",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": [
+          "FTP uses clear-text authentication"
+        ]
+      },
+      {
+        "port": 25,
+        "protocol": "tcp",
+        "service": "smtp",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 53,
+        "protocol": "tcp",
+        "service": "domain",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 110,
+        "protocol": "tcp",
+        "service": "pop3",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 143,
+        "protocol": "tcp",
+        "service": "imap",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 465,
+        "protocol": "tcp",
+        "service": "smtps",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 587,
+        "protocol": "tcp",
+        "service": "submission",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 853,
+        "protocol": "tcp",
+        "service": "domain-s",
+        "state": "closed",
+        "reason": "conn-refused",
+        "exposure_level": "LOW",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 993,
+        "protocol": "tcp",
+        "service": "imaps",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 995,
+        "protocol": "tcp",
+        "service": "pop3s",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "SQL Injection (Boolean Based)",
+      "parameter": "id",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "owasp": "A03:2021 - Injection",
+      "cwe": "CWE-89",
+      "evidence": "Response length changed compared to baseline"
+    },
+    {
+      "type": "FTP exposed",
+      "severity": "CRITICAL",
+      "confidence": 1.0,
+      "evidence": "FTP exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 21,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "HTTP exposed",
+      "severity": "CRITICAL",
+      "confidence": 0.9,
+      "evidence": "HTTP exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "CRITICAL",
+      "confidence": 0.8,
+      "evidence": "HTTPS exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 20,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 25,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 53,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 110,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 143,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 465,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 587,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 853,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 993,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 995,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-19T03:46:36.236023",
+    "domain": "darululoomonline.org",
+    "whois": {
+      "domain_name": "darululoomonline.org",
+      "registrar": "GoDaddy.com, LLC",
+      "organization": "None",
+      "country": "None",
+      "creation_date": "2010-04-07 17:26:04+00:00",
+      "expiration_date": "2032-04-07 17:26:04+00:00",
+      "name_servers": [
+        "ns1.hostmysite.in",
+        "ns2.hostmysite.in"
+      ]
+    },
+    "crtsh": [
+      "*.darululoomonline.org\ndarululoomonline.org",
+      "*.pos.darululoomonline.org\npos.darululoomonline.org",
+      "cpanel.darululoomonline.org\ncpcalendars.darululoomonline.org\ncpcontacts.darululoomonline.org\ndarululoomonline.org\nmail.darululoomonline.org\nwebdisk.darululoomonline.org\nwebmail.darululoomonline.org\nwww.darululoomonline.org",
+      "cpanel.darululoomonline.org\ncpcontacts.darululoomonline.org\ndarululoomonline.org\nmail.darululoomonline.org\nwebmail.darululoomonline.org\nwww.darululoomonline.org",
+      "cpanel.darululoomonline.org\ndarululoomonline.org\nmail.darululoomonline.org\nwebdisk.darululoomonline.org\nwebmail.darululoomonline.org\nwww.darululoomonline.org",
+      "cpanel.darululoomonline.org\ndarululoomonline.org\nmail.darululoomonline.org\nwebmail.darululoomonline.org\nwww.darululoomonline.org",
+      "cpanel.pos.darululoomonline.org\nftp.pos.darululoomonline.org\nmail.pos.darululoomonline.org\npos.darululoomonline.org\nwebmail.pos.darululoomonline.org\nwww.pos.darululoomonline.org",
+      "darululoomonline.org\nmail.darululoomonline.org\nwww.darululoomonline.org",
+      "darululoomonline.org\nwww.darululoomonline.org",
+      "ims.darululoomonline.org\nwww.ims.darululoomonline.org",
+      "posnew.darululoomonline.org",
+      "www.darululoomonline.org"
+    ],
+    "dns": {
+      "A": [
+        "178.212.35.92"
+      ],
+      "MX": [
+        "0 darululoomonline.org."
+      ],
+      "NS": [
+        "ns1.hostmysite.in.",
+        "ns2.hostmysite.in."
+      ],
+      "TXT": [
+        "\"zoho-verification=zb97707712.zmverify.zoho.in\"",
+        "\"google-site-verification=vWdpwF-e6IwkbYxfFJxRz41YhApoZji3vlyhGWi9vJ0\"",
+        "\"v=spf1 include:zcsend.in include:mxsspf.sendpulse.com include:s2.hostmysite.in +a +mx ~all\""
+      ]
+    },
+    "http": {
+      "status": 200,
+      "server": "Apache/2.4.57 (Unix) OpenSSL/1.1.1k",
+      "security_headers": {
+        "HSTS": false,
+        "CSP": false,
+        "XFO": false
+      }
+    },
+    "ssl": {
+      "issuer": {
+        "countryName": "US",
+        "organizationName": "Let's Encrypt",
+        "commonName": "E8"
+      },
+      "subject": {
+        "commonName": "www.darululoomonline.org"
+      },
+      "not_before": "Nov 27 17:38:03 2025 GMT",
+      "not_after": "Feb 25 17:38:02 2026 GMT"
+    },
+    "osint_score": 75,
+    "trust_level": "HIGH"
+  },
+  "risk_summary": {
+    "score": 100,
+    "severity": "CRITICAL",
+    "possible_attacks": [
+      "HTTPS exposed",
+      "SQL Injection (Boolean Based)",
+      "Missing X-Frame-Options",
+      "HTTP exposed",
+      "Exploitation possible via ftp service",
+      "FTP exposed"
+    ],
+    "risk_context": "High trust organization but weak security posture"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks",
+    "Database enumeration and data extraction"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Service on port 143 has high exposure, increasing attack likelihood.",
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 53 has high exposure, increasing attack likelihood.",
+      "FTP service is exposed; attacker may attempt anonymous access or credential brute-force.",
+      "Service on port 993 has high exposure, increasing attack likelihood.",
+      "Service on port 21 has high exposure, increasing attack likelihood.",
+      "Service on port 110 has high exposure, increasing attack likelihood.",
+      "Service on port 465 has high exposure, increasing attack likelihood.",
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "Service on port 587 has high exposure, increasing attack likelihood.",
+      "Service on port 443 has high exposure, increasing attack likelihood.",
+      "Service on port 995 has high exposure, increasing attack likelihood.",
+      "Service on port 25 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 71,
+    "engine_version": "1.1.0"
+  }
+}

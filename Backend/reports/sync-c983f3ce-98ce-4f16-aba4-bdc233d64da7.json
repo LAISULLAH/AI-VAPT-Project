@@ -1,0 +1,196 @@
+{
+  "scan_id": "sync-c983f3ce-98ce-4f16-aba4-bdc233d64da7",
+  "target": "cmarix.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 2,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "cdn.cmarix.com",
+        "dns_ips": [
+          "13.227.249.45",
+          "13.227.249.32",
+          "13.227.249.59",
+          "13.227.249.85"
+        ],
+        "url": "https://cdn.cmarix.com",
+        "alive": true,
+        "status": 403,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 2283,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www.cmarix.com",
+        "dns_ips": [
+          "18.66.57.41",
+          "18.66.57.74",
+          "18.66.57.82",
+          "18.66.57.23"
+        ],
+        "url": "https://www.cmarix.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "AWS",
+        "response_time_ms": 418,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 2,
+      "restricted": 1,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 26.29
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 25,
+        "protocol": "tcp",
+        "service": "smtp",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 465,
+        "protocol": "tcp",
+        "service": "smtps",
+        "state": "closed",
+        "reason": "conn-refused",
+        "exposure_level": "LOW",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "HTTP exposed",
+      "severity": "LOW",
+      "confidence": 0.2,
+      "evidence": "HTTP exposed",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "LOW",
+      "confidence": 0.1,
+      "evidence": "HTTPS exposed",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-16T05:32:22.221433",
+    "domain": "cmarix.com",
+    "whois": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Max retries exceeded with url: /?q=%25.cmarix.com&output=json (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x00000169CD630C20>: Failed to resolve 'crt.sh' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "dns": {
+      "A": [],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='cmarix.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x00000169CCD12FD0>: Failed to resolve 'cmarix.com' ([Errno 11001] getaddrinfo failed)\"))"
+    },
+    "ssl": {
+      "error": "[Errno 11001] getaddrinfo failed"
+    },
+    "osint_score": 0,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 10,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "Service on port 443 has high exposure, increasing attack likelihood.",
+      "Service on port 25 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 1558,
+    "engine_version": "1.1.0"
+  }
+}

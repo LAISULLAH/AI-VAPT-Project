@@ -1,0 +1,76 @@
+{
+  "scan_id": "sync-343d5ba9-95e9-4df9-bbb5-8d0d340c0d3f",
+  "target": "192.168.51.252",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 0,
+    "wildcard_dns": false,
+    "subdomains": [],
+    "summary": {
+      "public": 0,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 0.21
+  },
+  "port_scan": {
+    "services": [],
+    "confidence": "LIMITED",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-26T08:04:06.694524",
+    "domain": "192.168.51.252",
+    "whois": {
+      "domain_name": "None",
+      "registrar": "None",
+      "organization": "None",
+      "country": "None",
+      "creation_date": "None",
+      "expiration_date": "None",
+      "name_servers": []
+    },
+    "crtsh": [],
+    "dns": {
+      "A": [
+        "192.168.51.252"
+      ],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='192.168.51.252', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x0000020618843D90>, 'Connection to 192.168.51.252 timed out. (connect timeout=10)'))"
+    },
+    "ssl": {
+      "error": "timed out"
+    },
+    "osint_score": 30,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "High effort required, low probability of successful exploitation",
+    "reasoning": [
+      "Target exposes web functionality but critical network services are filtered or protected.",
+      "No abnormal application behavior or injectable inputs were observed.",
+      "Error messages and debug information appear suppressed.",
+      "Defensive controls such as WAF or secure configuration are likely in place."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 128,
+    "engine_version": "1.1.0"
+  }
+}

@@ -1,0 +1,419 @@
+{
+  "scan_id": "sync-b9506a86-1ce7-435e-a1b2-3a13ec734217",
+  "target": "brave.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 8,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "static1.brave.com",
+        "dns_ips": [
+          "2600:1f13:11b:9905:4aac:1f76:b8c6:c580",
+          "54.187.9.84",
+          "2600:1f13:11b:9905:6c7:9f7f:e5cd:c925",
+          "16.146.181.30",
+          "35.85.199.95",
+          "2600:1f13:11b:9904:4e83:74e4:d618:9769",
+          "2600:1f13:11b:9904:f18:b73:e963:960d",
+          "44.239.230.178"
+        ],
+        "url": "https://static1.brave.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1242,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "www.brave.com",
+        "dns_ips": [
+          "2600:9000:237a:5800:6:d0d2:780:93a1",
+          "2600:9000:237a:c00:6:d0d2:780:93a1",
+          "108.158.46.26",
+          "108.158.46.70",
+          "2600:9000:237a:e400:6:d0d2:780:93a1",
+          "108.158.46.102",
+          "2600:9000:237a:3000:6:d0d2:780:93a1",
+          "2600:9000:237a:5000:6:d0d2:780:93a1",
+          "2600:9000:237a:c600:6:d0d2:780:93a1",
+          "2600:9000:237a:de00:6:d0d2:780:93a1",
+          "2600:9000:237a:3c00:6:d0d2:780:93a1",
+          "108.158.46.120"
+        ],
+        "url": "https://www.brave.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1434,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "assets.brave.com",
+        "dns_ips": [
+          "151.101.210.137",
+          "2a04:4e42:31::649"
+        ],
+        "url": "https://assets.brave.com",
+        "alive": true,
+        "status": 403,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 502,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "support.brave.com",
+        "dns_ips": [
+          "2606:4700:90d1:d050:91a7:834:b2f0:6f16",
+          "104.18.13.196",
+          "104.18.12.196"
+        ],
+        "url": "https://support.brave.com",
+        "alive": true,
+        "status": 403,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Cloudflare CDN",
+        "response_time_ms": 2135,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "vpn.brave.com",
+        "dns_ips": [
+          "104.18.13.196",
+          "2606:4700:83b1:d050:919e:6d6:b2f0:6f16",
+          "104.18.12.196"
+        ],
+        "url": "https://vpn.brave.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Internal Service",
+        "importance": "MEDIUM",
+        "technology_hint": "Cloudflare CDN",
+        "response_time_ms": 912,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "blog.brave.com",
+        "dns_ips": [
+          "2600:9000:237a:5800:6:d0d2:780:93a1",
+          "2600:9000:237a:c00:6:d0d2:780:93a1",
+          "108.158.46.26",
+          "108.158.46.70",
+          "2600:9000:237a:e400:6:d0d2:780:93a1",
+          "108.158.46.102",
+          "2600:9000:237a:3000:6:d0d2:780:93a1",
+          "2600:9000:237a:5000:6:d0d2:780:93a1",
+          "2600:9000:237a:c600:6:d0d2:780:93a1",
+          "2600:9000:237a:de00:6:d0d2:780:93a1",
+          "2600:9000:237a:3c00:6:d0d2:780:93a1",
+          "108.158.46.120"
+        ],
+        "url": "https://blog.brave.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 859,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "static.brave.com",
+        "dns_ips": [
+          "2600:1f13:11b:9905:4aac:1f76:b8c6:c580",
+          "54.187.9.84",
+          "2600:1f13:11b:9905:6c7:9f7f:e5cd:c925",
+          "16.146.181.30",
+          "35.85.199.95",
+          "2600:1f13:11b:9904:4e83:74e4:d618:9769",
+          "2600:1f13:11b:9904:f18:b73:e963:960d",
+          "44.239.230.178"
+        ],
+        "url": "https://static.brave.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1272,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "api.brave.com",
+        "dns_ips": [
+          "2606:4700:90d1:d050:91a5:408:b2f0:6f16",
+          "104.18.13.196",
+          "104.18.12.196"
+        ],
+        "url": "https://api.brave.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "API / Backend",
+        "importance": "MEDIUM",
+        "technology_hint": "Cloudflare CDN",
+        "response_time_ms": 945,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 6,
+      "restricted": 2,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 11.57
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "HTTP exposed",
+      "severity": "LOW",
+      "confidence": 0.2,
+      "evidence": "HTTP exposed",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "LOW",
+      "confidence": 0.1,
+      "evidence": "HTTPS exposed",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-19T03:50:03.852163",
+    "domain": "brave.com",
+    "whois": {
+      "domain_name": "BRAVE.COM",
+      "registrar": "NAMECHEAP INC",
+      "organization": "Privacy service provided by Withheld for Privacy ehf",
+      "country": "IS",
+      "creation_date": "1995-09-18 04:00:00+00:00",
+      "expiration_date": "2029-09-17 04:00:00+00:00",
+      "name_servers": [
+        "CHIP.NS.CLOUDFLARE.COM",
+        "KIM.NS.CLOUDFLARE.COM"
+      ]
+    },
+    "crtsh": {
+      "error": "HTTPSConnectionPool(host='crt.sh', port=443): Read timed out. (read timeout=12)"
+    },
+    "dns": {
+      "A": [
+        "108.158.251.102",
+        "108.158.251.51",
+        "108.158.251.103",
+        "108.158.251.106"
+      ],
+      "MX": [
+        "1 aspmx.l.google.com.",
+        "10 aspmx2.googlemail.com.",
+        "10 aspmx3.googlemail.com.",
+        "5 alt1.aspmx.l.google.com.",
+        "5 alt2.aspmx.l.google.com."
+      ],
+      "NS": [
+        "chip.ns.cloudflare.com.",
+        "kim.ns.cloudflare.com."
+      ],
+      "TXT": [
+        "\"_globalsign-domain-verification=HCquRZirWbyRekkdrNfZdytgWf8BuwrRiQbTsM9TFN\"",
+        "\"MS=787B3E2FFA50666A738CC3767FFAAAD7DE78D7E9\"",
+        "\"MS=ms69010546\"",
+        "\"google-site-verification=ZwvN7sFdASQRA2TVqpPkgIsRY0nxP1AhNevNKduButY\"",
+        "\"apple-domain-verification=5XuBJ6NV4KD8docJ\"",
+        "\"docusign=d29b5a86-240e-4695-bda6-40fac836d1ff\"",
+        "\"SNAPCRAFT_IO_VERIFICATION=a6c419cd014cd335db14d30c0b0bffeb51648a8c1f006996aadb384625d7bcaa\"",
+        "\"v=spf1 include:_spf.google.com include:mail.zendesk.com include:mg-spf.greenhouse.io include:sendgrid.net include:amazonses.com -all\"",
+        "\"_globalsign-domain-verification=T5-VK7xTMEy-qPcEnJL4pGgOKcJJ4dyplGYsa3tDRD\"",
+        "\"_globalsign-domain-verification=L_gCJjCp8BmJQV8Dw1zuHUrMXgEBInKkweJ0NqFGSE\"",
+        "\"jetbrains-domain-verification=cmhccblslkxaex2x98x6rfhr5\"",
+        "\"brave-ledger-verification=fea1b86c84e90d36b577216805e316e1a073678b1fda846a9b6b5c991fc99c6d\"",
+        "\"mongodb-site-verification=R4d5ZTaweerkuQdcFvHhIt4Lb7qnpno0\"",
+        "\"_globalsign-domain-verification=WGzMAqWI13UY476xZnkBgLT3F7tQHWObKP9h9vLm15\"",
+        "\"stripe-verification=847220A91D9946797AF5B23AF5E5816819D7635F929A648A642F6F719B684D4E\"",
+        "\"hns-claim:aakdai3ypqcte6d7zzcpedduonetpg67lfap4fckaeaaaaaaaaaklzaororjdpl6qzexi75h7ofhv447lownw5btzuxvs4ibaaaaasi72t4a\"",
+        "\"stripe-verification=abaf8277692b579a36980f8bce5c0e666d01940029ff29b49275347ad8dd9ccf\"",
+        "\"google-site-verification=pUm3K397g4pZPb55WFKVAH4tD5Dk8VGN0228pOZMzE0\""
+      ]
+    },
+    "http": {
+      "status": 200,
+      "server": "AmazonS3",
+      "security_headers": {
+        "HSTS": true,
+        "CSP": true,
+        "XFO": true
+      }
+    },
+    "ssl": {
+      "issuer": {
+        "countryName": "US",
+        "organizationName": "Amazon",
+        "commonName": "Amazon RSA 2048 M04"
+      },
+      "subject": {
+        "commonName": "brave.com"
+      },
+      "not_before": "Sep 20 00:00:00 2025 GMT",
+      "not_after": "Oct 19 23:59:59 2026 GMT"
+    },
+    "osint_score": 80,
+    "trust_level": "HIGH"
+  },
+  "risk_summary": {
+    "score": 10,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Trusted organization with moderate security gaps"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "Service on port 443 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 87,
+    "engine_version": "1.1.0"
+  }
+}

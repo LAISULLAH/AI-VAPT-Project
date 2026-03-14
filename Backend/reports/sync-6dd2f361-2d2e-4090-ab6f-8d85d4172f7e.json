@@ -1,0 +1,581 @@
+{
+  "scan_id": "sync-6dd2f361-2d2e-4090-ab6f-8d85d4172f7e",
+  "target": "google.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 16,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "www4.google.com",
+        "dns_ips": [
+          "2404:6800:4009:80b::200e",
+          "142.250.195.46"
+        ],
+        "url": "https://www4.google.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 830,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "www.google.com",
+        "dns_ips": [
+          "142.250.77.68",
+          "2001:4860:4828:7700::",
+          "2001:4860:4827:7700::",
+          "2001:4860:4826:7700::",
+          "2001:4860:482c:7700::",
+          "2001:4860:482a:7700::",
+          "2001:4860:482b:7700::",
+          "2001:4860:4829:7700::",
+          "2001:4860:482d:7700::"
+        ],
+        "url": "https://www.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1173,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www5.google.com",
+        "dns_ips": [
+          "142.251.222.68"
+        ],
+        "url": "https://www5.google.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1298,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "blog.google.com",
+        "dns_ips": [
+          "2404:6800:4009:800::2009",
+          "142.250.207.137"
+        ],
+        "url": "https://blog.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 5300,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www6.google.com",
+        "dns_ips": [
+          "142.250.206.132"
+        ],
+        "url": "https://www6.google.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 2400,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "api.google.com",
+        "dns_ips": [
+          "142.250.206.100"
+        ],
+        "url": "https://api.google.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "API / Backend",
+        "importance": "MEDIUM",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 2183,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "apps.google.com",
+        "dns_ips": [
+          "142.250.194.238",
+          "2404:6800:4009:816::200e"
+        ],
+        "url": "https://apps.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 6628,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "shop.google.com",
+        "dns_ips": [
+          "74.125.24.92",
+          "2404:6800:4003:c03::5c"
+        ],
+        "url": "https://shop.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 4873,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "mobile.google.com",
+        "dns_ips": [
+          "142.250.207.171",
+          "2404:6800:4009:807::200b"
+        ],
+        "url": "https://mobile.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 5344,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www10.google.com",
+        "dns_ips": [
+          "2404:6800:4009:82b::200e",
+          "142.250.67.14"
+        ],
+        "url": "https://www10.google.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 653,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "help.google.com",
+        "dns_ips": [
+          "142.250.194.238",
+          "2404:6800:4009:816::200e"
+        ],
+        "url": "https://help.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 6148,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "mail.google.com",
+        "dns_ips": [
+          "2404:6800:4009:808::2005",
+          "192.178.211.83",
+          "192.178.211.18",
+          "192.178.211.19",
+          "192.178.211.17"
+        ],
+        "url": "https://mail.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 5272,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "admin.google.com",
+        "dns_ips": [
+          "142.250.195.78",
+          "2404:6800:4009:803::200e"
+        ],
+        "url": "https://admin.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 6120,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": true
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "www9.google.com",
+        "dns_ips": [
+          "142.250.194.238",
+          "2404:6800:4009:816::200e"
+        ],
+        "url": "https://www9.google.com",
+        "alive": true,
+        "status": 404,
+        "meaning": "Service behavior unclear",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 598,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "NONE",
+          "reason": "Low operational risk",
+          "recommended_checks": []
+        }
+      },
+      {
+        "subdomain": "support.google.com",
+        "dns_ips": [
+          "2404:6800:4009:80d::200e",
+          "142.251.221.238"
+        ],
+        "url": "https://support.google.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 2107,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "vpn.google.com",
+        "dns_ips": [
+          "64.9.224.68",
+          "64.9.224.69",
+          "64.9.224.70"
+        ],
+        "url": null,
+        "alive": true,
+        "status": "DNS_ONLY",
+        "meaning": "DNS record exists but no public web service",
+        "category": "Internal Service",
+        "importance": "MEDIUM",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "DNS entry exists without public service exposure",
+          "recommended_checks": [
+            "DNS record changes",
+            "Unexpected service exposure"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 14,
+      "restricted": 0,
+      "dns_only": 1,
+      "high_importance": 0
+    },
+    "duration_sec": 20.36
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "SQL Injection (Boolean Based)",
+      "parameter": "search",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "owasp": "A03:2021 - Injection",
+      "cwe": "CWE-89",
+      "evidence": "Response length changed compared to baseline"
+    },
+    {
+      "type": "HTTP exposed",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "HTTP exposed; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "HIGH",
+      "confidence": 0.6,
+      "evidence": "HTTPS exposed; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-02-12T06:00:16.299209",
+    "domain": "google.com",
+    "whois": {
+      "domain_name": "GOOGLE.COM",
+      "registrar": "MarkMonitor, Inc.",
+      "organization": "Google LLC",
+      "country": "US",
+      "creation_date": "1997-09-15 04:00:00+00:00",
+      "expiration_date": "2028-09-14 04:00:00+00:00",
+      "name_servers": [
+        "NS1.GOOGLE.COM",
+        "NS2.GOOGLE.COM",
+        "NS3.GOOGLE.COM",
+        "NS4.GOOGLE.COM"
+      ]
+    },
+    "crtsh": [],
+    "dns": {
+      "A": [
+        "142.250.70.110"
+      ],
+      "MX": [
+        "10 smtp.google.com."
+      ],
+      "NS": [
+        "ns2.google.com.",
+        "ns4.google.com.",
+        "ns1.google.com.",
+        "ns3.google.com."
+      ],
+      "TXT": []
+    },
+    "http": {
+      "status": 200,
+      "server": "gws",
+      "security_headers": {
+        "HSTS": false,
+        "CSP": false,
+        "XFO": true
+      }
+    },
+    "ssl": {
+      "issuer": {
+        "countryName": "US",
+        "organizationName": "Google Trust Services",
+        "commonName": "WR2"
+      },
+      "subject": {
+        "commonName": "*.google.com"
+      },
+      "not_before": "Jan 19 08:36:59 2026 GMT",
+      "not_after": "Apr 13 08:36:58 2026 GMT"
+    },
+    "osint_score": 65,
+    "trust_level": "MEDIUM"
+  },
+  "risk_summary": {
+    "score": 60,
+    "severity": "HIGH",
+    "possible_attacks": [
+      "SQL Injection (Boolean Based)",
+      "HTTP exposed",
+      "HTTPS exposed"
+    ],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks",
+    "Database enumeration and data extraction"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "Public web service allows endpoint enumeration and input-based vulnerability testing.",
+      "Service on port 443 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 108,
+    "engine_version": "1.1.0"
+  }
+}

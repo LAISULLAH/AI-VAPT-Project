@@ -1,0 +1,95 @@
+{
+  "scan_id": "sync-b2a1d7b2-5f20-4287-a1c4-4a5bbea1c728",
+  "target": "juice-shop.herokuapp.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 0,
+    "wildcard_dns": false,
+    "subdomains": [],
+    "summary": {
+      "public": 0,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 17.56
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "HTTP exposed",
+      "severity": "MEDIUM",
+      "confidence": 0.5,
+      "evidence": "HTTP exposed; Missing Content-Security-Policy; Missing HSTS header; Missing Content-Security-Policy",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "MEDIUM",
+      "confidence": 0.4,
+      "evidence": "HTTPS exposed; Missing Content-Security-Policy; Missing HSTS header; Missing Content-Security-Policy",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    }
+  ],
+  "osint": {
+    "status": "failed",
+    "error": "No OSINT output | stderr=Traceback (most recent call last):\n  File \"C:\\Users\\bloch\\OneDrive\\Desktop\\AI VAPT\\Backend\\core\\osint_logger.py\", line 9, in <module>\n    import whois\nModuleNotFoundError: No module named 'whois'"
+  },
+  "risk_summary": {
+    "score": 20,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "Service on port 443 has high exposure, increasing attack likelihood.",
+      "Public web service allows endpoint enumeration and input-based vulnerability testing."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 64,
+    "engine_version": "1.1.0"
+  }
+}

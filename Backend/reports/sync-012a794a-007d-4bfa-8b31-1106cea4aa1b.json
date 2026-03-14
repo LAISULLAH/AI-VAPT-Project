@@ -1,0 +1,270 @@
+{
+  "scan_id": "sync-012a794a-007d-4bfa-8b31-1106cea4aa1b",
+  "target": "cmarix.com",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 2,
+    "wildcard_dns": false,
+    "subdomains": [
+      {
+        "subdomain": "www.cmarix.com",
+        "dns_ips": [
+          "54.230.27.36",
+          "54.230.27.5",
+          "54.230.27.124",
+          "54.230.27.14"
+        ],
+        "url": "https://www.cmarix.com",
+        "alive": true,
+        "status": 200,
+        "meaning": "Publicly accessible service",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 371,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      },
+      {
+        "subdomain": "cdn.cmarix.com",
+        "dns_ips": [
+          "108.157.238.75",
+          "108.157.238.39",
+          "108.157.238.115",
+          "108.157.238.129"
+        ],
+        "url": "https://cdn.cmarix.com",
+        "alive": true,
+        "status": 403,
+        "meaning": "Service exists but access is restricted (login/firewall)",
+        "category": "Public Website",
+        "importance": "LOW",
+        "technology_hint": "Unknown / Enterprise CDN",
+        "response_time_ms": 1070,
+        "tls": {
+          "https_supported": true,
+          "http_redirects": false
+        },
+        "soc_monitoring": {
+          "level": "BASIC",
+          "reason": "Public or access-controlled web service",
+          "recommended_checks": [
+            "Uptime monitoring",
+            "TLS certificate validity"
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "public": 2,
+      "restricted": 1,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 11.8
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 25,
+        "protocol": "tcp",
+        "service": "smtp",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "service": "http",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "service": "https",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "WEB",
+        "reasoning": [
+          "Web service reachable"
+        ]
+      },
+      {
+        "port": 465,
+        "protocol": "tcp",
+        "service": "smtps",
+        "state": "closed",
+        "reason": "conn-refused",
+        "exposure_level": "LOW",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [
+    {
+      "type": "HTTP exposed",
+      "severity": "CRITICAL",
+      "confidence": 0.9,
+      "evidence": "HTTP exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 80,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Redirect all HTTP traffic to HTTPS and disable port 80 if not required."
+    },
+    {
+      "type": "HTTPS exposed",
+      "severity": "CRITICAL",
+      "confidence": 0.8,
+      "evidence": "HTTPS exposed; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 443,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Implement strong security headers such as CSP, HSTS, and X-Frame-Options."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 25,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    },
+    {
+      "type": "Missing X-Frame-Options",
+      "severity": "HIGH",
+      "confidence": 0.7,
+      "evidence": "Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy; Missing HSTS header; Missing X-Frame-Options; Missing X-Content-Type-Options; Missing Content-Security-Policy",
+      "port": 465,
+      "source": "CONFIG_SCAN",
+      "recommendation": "Apply standard security hardening measures."
+    }
+  ],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-14T10:10:40.661204",
+    "domain": "cmarix.com",
+    "whois": {
+      "domain_name": "CMARIX.COM",
+      "registrar": "GoDaddy.com, LLC",
+      "organization": "Domains By Proxy, LLC",
+      "country": "US",
+      "creation_date": "2014-08-19 07:06:36+00:00",
+      "expiration_date": "2028-08-19 07:06:36+00:00",
+      "name_servers": [
+        "NS-1071.AWSDNS-05.ORG",
+        "NS-1733.AWSDNS-24.CO.UK",
+        "NS-336.AWSDNS-42.COM",
+        "NS-881.AWSDNS-46.NET"
+      ]
+    },
+    "crtsh": [
+      "*.cmarix.com\ncmarix.com",
+      "blog.cdn.cmarix.com\ncdn.cmarix.com\ncmarix.com\nwww.cmarix.com",
+      "cdn.cmarix.com",
+      "cmarix.cmarix.com\nwww.cmarix.cmarix.com",
+      "cmarix.com\nwww.cmarix.com",
+      "cmarix.com.md-9.webhostbox.net\nmail.cmarix.com\nmail.cmarix.com.md-9.webhostbox.net\nwww.cmarix.com.md-9.webhostbox.net",
+      "cmarixemail.cmarix.com\ncmarixtechnolabs.cmarix.com\noldsite24012018.cmarix.com\nv213012018.cmarix.com\nwww.cmarixemail.cmarix.com\nwww.cmarixtechnolabs.cmarix.com\nwww.oldsite24012018.cmarix.com\nwww.v213012018.cmarix.com",
+      "cmarixtechnolabs.cmarix.com\noldsite24012018.cmarix.com\nv213012018.cmarix.com\nwww.cmarixtechnolabs.cmarix.com\nwww.oldsite24012018.cmarix.com\nwww.v213012018.cmarix.com",
+      "mail.cmarix.com",
+      "www.cmarix.com"
+    ],
+    "dns": {
+      "A": [
+        "50.18.112.111"
+      ],
+      "MX": [
+        "1 aspmx.l.google.com.",
+        "10 alt3.aspmx.l.google.com.",
+        "10 alt4.aspmx.l.google.com.",
+        "5 alt1.aspmx.l.google.com.",
+        "5 alt2.aspmx.l.google.com."
+      ],
+      "NS": [
+        "ns-1071.awsdns-05.org.",
+        "ns-1733.awsdns-24.co.uk.",
+        "ns-336.awsdns-42.com.",
+        "ns-881.awsdns-46.net."
+      ],
+      "TXT": [
+        "\"Sendinblue-code:dc269d4b8c56426d8e0449f3820c707e\"",
+        "\"google-site-verification=9F3cfOjFFigZamFgN7RfwsIWlrIgF19Ca09wL67gz1M\"",
+        "\"v=spf1 include:_spf.google.com ~all\""
+      ]
+    },
+    "http": {
+      "status": 200,
+      "server": "Apache/2.4.52 (Ubuntu)",
+      "security_headers": {
+        "HSTS": false,
+        "CSP": false,
+        "XFO": false
+      }
+    },
+    "ssl": {
+      "issuer": {
+        "countryName": "GB",
+        "organizationName": "Sectigo Limited",
+        "commonName": "Sectigo Public Server Authentication CA DV R36"
+      },
+      "subject": {
+        "commonName": "cmarix.com"
+      },
+      "not_before": "Dec 30 00:00:00 2025 GMT",
+      "not_after": "Jan 30 23:59:59 2027 GMT"
+    },
+    "osint_score": 75,
+    "trust_level": "HIGH"
+  },
+  "risk_summary": {
+    "score": 100,
+    "severity": "CRITICAL",
+    "possible_attacks": [
+      "Missing X-Frame-Options",
+      "HTTP exposed",
+      "HTTPS exposed"
+    ],
+    "risk_context": "High trust organization but weak security posture"
+  },
+  "attack_path": [
+    "Unencrypted HTTP traffic interception",
+    "Security header bypass and client-side attacks"
+  ],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Service on port 443 has high exposure, increasing attack likelihood.",
+      "Service on port 25 has high exposure, increasing attack likelihood.",
+      "Service on port 80 has high exposure, increasing attack likelihood.",
+      "Public web service allows endpoint enumeration and input-based vulnerability testing."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 139,
+    "engine_version": "1.1.0"
+  }
+}

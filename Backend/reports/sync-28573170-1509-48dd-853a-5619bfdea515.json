@@ -1,0 +1,94 @@
+{
+  "scan_id": "sync-28573170-1509-48dd-853a-5619bfdea515",
+  "target": "uat-leasing.econcord.com.sa",
+  "subdomain_enum": {
+    "mode": "aggressive-auto",
+    "wordlist_generated": 1923,
+    "found": 0,
+    "wildcard_dns": false,
+    "subdomains": [],
+    "summary": {
+      "public": 0,
+      "restricted": 0,
+      "dns_only": 0,
+      "high_importance": 0
+    },
+    "duration_sec": 18.44
+  },
+  "port_scan": {
+    "services": [
+      {
+        "port": 113,
+        "protocol": "tcp",
+        "service": "ident",
+        "state": "closed",
+        "reason": "conn-refused",
+        "exposure_level": "LOW",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      },
+      {
+        "port": 179,
+        "protocol": "tcp",
+        "service": "bgp",
+        "state": "open",
+        "reason": "syn-ack",
+        "exposure_level": "HIGH",
+        "attack_surface": "NETWORK",
+        "reasoning": []
+      }
+    ],
+    "confidence": "HIGH",
+    "note": "Port scan includes open, closed, and filtered states. Filtered ports usually indicate firewall/CDN protection."
+  },
+  "vulnerabilities": [],
+  "osint": {
+    "status": "completed",
+    "generated_at": "2026-01-14T10:04:28.556636",
+    "domain": "uat-leasing.econcord.com.sa",
+    "whois": {
+      "domain_name": "ECONCORD.COM.SA",
+      "registrar": "None",
+      "organization": "None",
+      "country": "None",
+      "creation_date": "None",
+      "expiration_date": "None",
+      "name_servers": []
+    },
+    "crtsh": [],
+    "dns": {
+      "A": [
+        "128.127.228.34"
+      ],
+      "MX": [],
+      "NS": [],
+      "TXT": []
+    },
+    "http": {
+      "error": "HTTPSConnectionPool(host='uat-leasing.econcord.com.sa', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x000001C145C51590>, 'Connection to uat-leasing.econcord.com.sa timed out. (connect timeout=10)'))"
+    },
+    "ssl": {
+      "error": "timed out"
+    },
+    "osint_score": 30,
+    "trust_level": "LOW"
+  },
+  "risk_summary": {
+    "score": 0,
+    "severity": "LOW",
+    "possible_attacks": [],
+    "risk_context": "Low external trust with limited attack surface"
+  },
+  "attack_path": [],
+  "attack_explanation": {
+    "attacker_view": "Exploitation may be possible depending on attacker skill and defenses",
+    "reasoning": [
+      "Service on port 179 has high exposure, increasing attack likelihood."
+    ]
+  },
+  "meta": {
+    "scan_profile": "SAFE",
+    "duration_sec": 99,
+    "engine_version": "1.1.0"
+  }
+}
