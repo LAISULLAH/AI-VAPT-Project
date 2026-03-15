@@ -1746,14 +1746,13 @@ const Dashboard = () => {
     setJsonResponse(null);
 
     try {
-      const API_BASE = "https://ai-vapt-project.onrender.com";
-      const response = await fetch(`${API_BASE}/scan/full?target=${domain}`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "accept": "application/json"
-  }
-});
+  const API_BASE = "https://ai-vapt-project.onrender.com";
+  const response = await fetch(`${API_BASE}/scan/full?target=${domain}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json"
+    }
+  });
       if (!response.ok) throw new Error(`Scan failed: ${response.status}`);
 
       const data = await response.json();
