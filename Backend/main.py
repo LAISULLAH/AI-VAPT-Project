@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import logging
@@ -34,11 +34,14 @@ class ScanRequest(BaseModel):
 def root():
     return {
         "status": "AI VAPT API Running",
-        "usage": "POST /scan or GET /scan/full?target=example.com"
+        "usage": [
+            "POST /scan",
+            "GET /scan/full?target=example.com"
+        ]
     }
 
 
-# ---------------- OLD POST API ----------------
+# ---------------- Standard Scan (POST) ----------------
 @app.post("/scan")
 async def scan_target(request: ScanRequest):
 
@@ -50,15 +53,21 @@ async def scan_target(request: ScanRequest):
     logger.info(f"Starting scan for {target}")
 
     scan_id = start_scan(target)
-
     result = await run_scan(scan_id, target)
 
     return result
 
 
-# ---------------- NEW GET API (for frontend) ----------------
-@app.get("/scan/full")
-async def scan_full(target: str):
+# ---------------- Full Scan (GET or POST) ----------------
+@app.api_route("/scan/full", methods=["GET", "POST"])
+async def scan_full(
+    target: str = Query(None),
+    body: ScanRequest = Body(None)
+):
+
+    # target GET se aaye ya POST body se
+    if body and body.target:
+        target = body.target
 
     if not target:
         raise HTTPException(status_code=400, detail="Target required")
@@ -66,7 +75,6 @@ async def scan_full(target: str):
     logger.info(f"Starting FULL scan for {target}")
 
     scan_id = start_scan(target)
-
     result = await run_scan(scan_id, target)
 
     return result
