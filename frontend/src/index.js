@@ -2,8 +2,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';           // ← must match the file name and export
-// import reportWebVitals from './reportWebVitals';
+import App from './VAPT.js';  // ← Changed from 'vapt.js' to 'VAPT.js' to match actual filename
+import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -12,5 +12,4 @@ root.render(
   </React.StrictMode>
 );
 
-// If you want to measure performance
-// reportWebVitals(console.log);
+reportWebVitals();

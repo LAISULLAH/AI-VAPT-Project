@@ -1,40 +1,38 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-/* Global optimizations for responsive design */
-* {
+/* ============================================================
+   WHITENX — index.css
+   Keep this minimal — App.css handles everything
+   ============================================================ */
+
+/* Force black background at root level — prevents ANY flash */
+*, *::before, *::after {
   -webkit-tap-highlight-color: transparent;
 }
 
 html {
+  background: #000000 !important;
   scroll-behavior: smooth;
 }
 
 body {
+  background: #000000 !important;
+  margin: 0;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Responsive font sizes */
-@media (max-width: 768px) {
-  html {
-    font-size: 15px;
-  }
+#root {
+  background: #000000 !important;
+  min-height: 100vh;
 }
 
-@media (max-width: 480px) {
-  html {
-    font-size: 14px;
-  }
-}
+/* Responsive font scale */
+@media (max-width: 768px) { html { font-size: 15px; } }
+@media (max-width: 480px) { html { font-size: 14px; } }
 
-/* Better touch targets for mobile */
+/* Better touch targets */
 @media (hover: none) and (pointer: coarse) {
-  button,
-  input,
-  textarea,
-  select {
+  button, input, textarea, select {
     min-height: 44px;
-    min-width: 44px;
   }
 }
