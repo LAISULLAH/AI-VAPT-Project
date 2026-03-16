@@ -1,17 +1,19 @@
 {
   "files": {
-    "main.css": "/AI-VAPT-Project/static/css/main.be426245.css",
-    "main.js": "/AI-VAPT-Project/static/js/main.c8a1e67b.js",
+    "main.css": "/AI-VAPT-Project/static/css/main.1b49d2c2.css",
+    "main.js": "/AI-VAPT-Project/static/js/main.7257775a.js",
     "static/js/242.c5f8c1ad.chunk.js": "/AI-VAPT-Project/static/js/242.c5f8c1ad.chunk.js",
     "static/js/87.792e4a6b.chunk.js": "/AI-VAPT-Project/static/js/87.792e4a6b.chunk.js",
+    "static/js/453.03346f77.chunk.js": "/AI-VAPT-Project/static/js/453.03346f77.chunk.js",
     "index.html": "/AI-VAPT-Project/index.html",
-    "main.be426245.css.map": "/AI-VAPT-Project/static/css/main.be426245.css.map",
-    "main.c8a1e67b.js.map": "/AI-VAPT-Project/static/js/main.c8a1e67b.js.map",
+    "main.1b49d2c2.css.map": "/AI-VAPT-Project/static/css/main.1b49d2c2.css.map",
+    "main.7257775a.js.map": "/AI-VAPT-Project/static/js/main.7257775a.js.map",
     "242.c5f8c1ad.chunk.js.map": "/AI-VAPT-Project/static/js/242.c5f8c1ad.chunk.js.map",
-    "87.792e4a6b.chunk.js.map": "/AI-VAPT-Project/static/js/87.792e4a6b.chunk.js.map"
+    "87.792e4a6b.chunk.js.map": "/AI-VAPT-Project/static/js/87.792e4a6b.chunk.js.map",
+    "453.03346f77.chunk.js.map": "/AI-VAPT-Project/static/js/453.03346f77.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.be426245.css",
-    "static/js/main.c8a1e67b.js"
+    "static/css/main.1b49d2c2.css",
+    "static/js/main.7257775a.js"
   ]
 }
