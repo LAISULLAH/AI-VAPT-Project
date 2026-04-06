@@ -1,0 +1,75 @@
+/* Strict Dark Theme: Black + White Only */
+:root {
+  --bg-color: #000000;
+  --card-bg: #0a0a0a;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --accent: #ffffff;
+  --border: #222222;
+  --success: #ffffff;
+  --error: #ffffff; 
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, sans-serif;
+  margin: 0;
+  overflow-x: hidden;
+  user-select: none; /* Task 5: Prevent Copy */
+}
+
+/* Task 5: Prevent Screenshot basic deterrent */
+.window-blur {
+  filter: blur(15px);
+  transition: filter 0.3s ease;
+}
+
+.dashboard-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vapt-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(5px);
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  background: #111111;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.status-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  border: 1px solid var(--border);
+}
