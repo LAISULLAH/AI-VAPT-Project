@@ -6,10 +6,12 @@ import socket
 from datetime import datetime, timedelta
 
 from fastapi import FastAPI, HTTPException, Query, Body, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from core.scan_manager import SCAN_STORE, start_scan, run_scan
+from core.pdf_generator import generate_pdf_report
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -163,6 +165,35 @@ def get_status(scan_id: str):
         raise HTTPException(status_code=404, detail="Scan not found")
 
     return SCAN_STORE[scan_id]
+
+
+# ---------------- PDF Report Download ----------------
+@app.get("/report/{scan_id}/pdf")
+def download_pdf_report(scan_id: str):
+
+    if scan_id not in SCAN_STORE:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    scan_data = SCAN_STORE[scan_id]
+
+    # Generate PDF
+    try:
+        pdf_bytes = generate_pdf_report(scan_data)
+    except Exception as e:
+        logger.error(f"PDF generation failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate PDF report")
+
+    # Return PDF as streaming response
+    def iter_pdf():
+        yield pdf_bytes
+
+    filename = f"security_report_{scan_data.get('target', 'unknown')}_{scan_id[:8]}.pdf"
+
+    return StreamingResponse(
+        iter_pdf(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 # ---------------- Health ----------------

@@ -82,23 +82,26 @@ class EnhancedScanManager:
                 self.thread_pool,
                 enumerate_subdomains,
                 target,
-                20,
-                3
+                50,  # Increased from 20 to 50 threads
+                5    # Increased timeout from 3 to 5 seconds
             )
-            result["subdomains"] = subdomains.get("subdomains", [])
+            result["subdomain_enum"] = subdomains  # Store full result with metadata
+            result["subdomains"] = subdomains.get("subdomains", [])  # Keep backward compatibility
         except Exception as e:
             logger.error(f"Subdomain enumeration failed: {e}")
+            result["subdomain_enum"] = {"error": str(e)}
             result["subdomains"] = []
 
         # ---------------- Port Scan ----------------
         try:
             if asyncio.iscoroutinefunction(self.port_scanner):
-                port_scan_result = await self.port_scanner(target)
+                port_scan_result = await self.port_scanner(target, ports="1-2000")  # Increased from 1-1000 to 1-2000
             else:
                 port_scan_result = await loop.run_in_executor(
                     self.thread_pool,
                     self.port_scanner,
-                    target
+                    target,
+                    "1-2000"  # Increased port range
                 )
         except Exception as e:
             logger.error(f"Port scan failed: {e}")
@@ -191,7 +194,7 @@ class EnhancedScanManager:
             if name and version and name != "unknown":
                 try:
                     cves = await self.cve_correlator.correlate_service_cves(name, version)
-                    for c in cves[:5]:
+                    for c in cves[:10]:  # Increased from 5 to 10 CVEs per service
                         vulns.append({
                             "type": "CVE",
                             "id": c.get("id"),

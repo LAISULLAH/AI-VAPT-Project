@@ -46,6 +46,32 @@ const VaptDashboard = ({ scanId }) => {
   // Task 5: Disable Right Click
   const onContextMenu = (e) => e.preventDefault();
 
+  // PDF Report Download
+  const downloadPDFReport = async (scanId) => {
+    try {
+      const response = await fetch(`${API_BASE}/report/${scanId}/pdf`, {
+        headers: {
+          'x-access-token': ACCESS_KEY
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to download PDF');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `security_report_${data.target}_${scanId.slice(0, 8)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('PDF download failed:', error);
+      alert('Failed to download PDF report. Please try again.');
+    }
+  };
+
   if (loading) return <div className="dashboard-container"><div className="vapt-card">Loading scan results...</div></div>;
   if (!data) return <div className="dashboard-container"><h1>No Data Found</h1></div>;
 
@@ -71,12 +97,20 @@ const VaptDashboard = ({ scanId }) => {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: '12px', marginBottom: '8px' }}>RISK LEVEL: <strong>{riskLevel}</strong></div>
-          <button 
-            onClick={() => generateVaptReport(data)}
-            style={{ background: '#fff', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            GENERATE REPORT
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => generateVaptReport(data)}
+              style={{ background: '#333', color: '#fff', border: '1px solid #555', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+            >
+              HTML REPORT
+            </button>
+            <button
+              onClick={() => downloadPDFReport(data.scan_id)}
+              style={{ background: '#fff', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              PDF REPORT
+            </button>
+          </div>
         </div>
       </header>
 

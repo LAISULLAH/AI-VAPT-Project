@@ -45,6 +45,9 @@ cachetools==5.3.3
 beautifulsoup4==4.12.3
 lxml==5.2.2
 
+# PDF Generation
+reportlab==4.0.7
+
 # Utilities
 click==8.1.7
 h11==0.14.0
