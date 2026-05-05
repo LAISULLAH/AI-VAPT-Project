@@ -24,6 +24,37 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 SCAN_STORE: Dict[str, Dict] = {}
+EVENT_STORE: Dict[str, List[Dict]] = {}
+
+# Global event broadcaster (will be set from main.py)
+_event_broadcaster = None
+
+def set_event_broadcaster(broadcaster):
+    """Set the WebSocket event broadcaster from main.py"""
+    global _event_broadcaster
+    _event_broadcaster = broadcaster
+
+async def emit_event(scan_id: str, event_type: str, data: any = None):
+    """Emit an event to WebSocket clients"""
+    event = {
+        "timestamp": datetime.now().isoformat(),
+        "event": event_type,
+        "data": data
+    }
+    
+    # Store event
+    if scan_id not in EVENT_STORE:
+        EVENT_STORE[scan_id] = []
+    EVENT_STORE[scan_id].append(event)
+    
+    logger.info(f"Emitting event: {event_type} for scan {scan_id}")
+    
+    # Broadcast if broadcaster is available
+    if _event_broadcaster:
+        await _event_broadcaster(scan_id, event)
+        logger.info(f"Event broadcasted: {event_type}")
+    else:
+        logger.warning(f"No event broadcaster available for {event_type}")
 
 
 class EnhancedScanManager:
@@ -68,15 +99,21 @@ class EnhancedScanManager:
         start_time = datetime.now()
         loop = asyncio.get_event_loop()
 
+        # Emit scan start
+        await emit_event(scan_id, "scan_started", {"target": target})
+
         # ---------------- OSINT ----------------
+        await emit_event(scan_id, "osint_started", {})
         try:
             osint_data = await self.osint_collector.collect_osint(target)
             result["osint"] = osint_data
+            await emit_event(scan_id, "osint_completed", {"whois_found": bool(osint_data.get("whois")), "dns_records": len(osint_data.get("dns", {}))})
         except Exception as e:
             logger.error(f"OSINT failed: {e}")
             result["osint"] = {}
 
         # ---------------- Subdomains ----------------
+        await emit_event(scan_id, "subdomain_enum_started", {})
         try:
             subdomains = await loop.run_in_executor(
                 self.thread_pool,
@@ -87,12 +124,14 @@ class EnhancedScanManager:
             )
             result["subdomain_enum"] = subdomains  # Store full result with metadata
             result["subdomains"] = subdomains.get("subdomains", [])  # Keep backward compatibility
+            await emit_event(scan_id, "subdomain_enum_completed", {"count": len(result["subdomains"])})
         except Exception as e:
             logger.error(f"Subdomain enumeration failed: {e}")
             result["subdomain_enum"] = {"error": str(e)}
             result["subdomains"] = []
 
         # ---------------- Port Scan ----------------
+        await emit_event(scan_id, "port_scan_started", {"total_ports": 2000})
         try:
             if asyncio.iscoroutinefunction(self.port_scanner):
                 port_scan_result = await self.port_scanner(target, ports="1-2000")  # Increased from 1-1000 to 1-2000
@@ -117,7 +156,16 @@ class EnhancedScanManager:
         else:
             open_ports = []
 
+        # Emit port scan events
+        for port_info in open_ports:
+            port = port_info.get("port") if isinstance(port_info, dict) else port_info
+            service = port_info.get("service", "unknown") if isinstance(port_info, dict) else "unknown"
+            await emit_event(scan_id, "port_open", {"port": port, "service": service})
+        
+        await emit_event(scan_id, "port_scan_completed", {"open_ports": len(open_ports)})
+
         # ---------------- Service Fingerprint ----------------
+        await emit_event(scan_id, "service_fingerprint_started", {"ports": len(open_ports)})
         services = []
         for p in open_ports:
             port = p.get("port") if isinstance(p, dict) else p
@@ -132,6 +180,7 @@ class EnhancedScanManager:
                         **fp
                     }
                     services.append(service_entry)
+                    await emit_event(scan_id, "service_fingerprinted", {"port": port, "service": fp.get("service_name", p.get("service", "unknown")), "version": fp.get("version", "unknown")})
                 else:
                     fp = await self.fingerprinter.fingerprint_service(target, port)
                     service_entry = {
@@ -142,6 +191,7 @@ class EnhancedScanManager:
                         **fp
                     }
                     services.append(service_entry)
+                    await emit_event(scan_id, "service_fingerprinted", {"port": port, "service": fp.get("service_name", "unknown"), "version": fp.get("version", "unknown")})
             except Exception as e:
                 logger.error(f"Service fingerprint failed for port {port}: {e}")
                 if isinstance(p, dict):
@@ -156,8 +206,10 @@ class EnhancedScanManager:
                         "service": "unknown",
                         "state": "open"
                     })
+                await emit_event(scan_id, "service_fingerprint_failed", {"port": port, "error": str(e)})
 
         result["services"] = services
+        await emit_event(scan_id, "service_fingerprint_completed", {"services": len(services)})
 
         # ---------------- Web Analysis (Fixed) ----------------
         web_ports = [80, 443, 8080, 8443, 3000, 5000, 8000]
@@ -186,6 +238,7 @@ class EnhancedScanManager:
                 logger.error(f"SSL analysis failed: {e}")
 
         # ---------------- CVE Correlation ----------------
+        await emit_event(scan_id, "cve_correlation_started", {"services": len(services)})
         vulns = []
         for s in services:
             name = s.get("service_name") or s.get("service")
@@ -204,10 +257,20 @@ class EnhancedScanManager:
                             "port": s["port"],
                             "service": name
                         })
+                        await emit_event(scan_id, "vulnerability_found", {
+                            "type": "CVE",
+                            "id": c.get("id"),
+                            "service": name,
+                            "severity": self._severity(c.get("cvss")),
+                            "port": s["port"]
+                        })
                 except Exception as e:
                     logger.error(f"CVE correlation failed for {name} {version}: {e}")
+        
+        await emit_event(scan_id, "cve_correlation_completed", {"cves_found": len(vulns)})
 
         # ---------------- Vuln Scan ----------------
+        await emit_event(scan_id, "vuln_scan_started", {"target": target})
         try:
             scan_vulns = await loop.run_in_executor(
                 self.thread_pool,
@@ -215,16 +278,28 @@ class EnhancedScanManager:
                 target,
                 services
             )
+            for vuln in scan_vulns:
+                await emit_event(scan_id, "vulnerability_found", {
+                    "type": vuln.get("type"),
+                    "port": vuln.get("port"),
+                    "severity": vuln.get("severity"),
+                    "vector": vuln.get("vulnerability_type")
+                })
         except Exception as e:
             logger.error(f"Vulnerability scan failed: {e}")
             scan_vulns = []
+        
+        await emit_event(scan_id, "vuln_scan_completed", {"vulns_found": len(scan_vulns)})
 
         # ---------------- AI Prediction ----------------
+        await emit_event(scan_id, "ai_prediction_started", {})
         try:
             ai_vulns = predict_vulnerabilities(target, services)
         except Exception as e:
             logger.error(f"AI prediction failed: {e}")
             ai_vulns = []
+        
+        await emit_event(scan_id, "ai_prediction_completed", {"predictions": len(ai_vulns)})
 
         all_vulns = vulns + scan_vulns + ai_vulns
         result["vulnerabilities"] = all_vulns
@@ -280,6 +355,15 @@ class EnhancedScanManager:
         end_time = datetime.now()
         result["end_time"] = end_time.isoformat()
         result["scan_duration"] = (end_time - start_time).total_seconds()
+
+        # Emit final scan complete event
+        await emit_event(scan_id, "scan_completed", {
+            "duration": result["scan_duration"],
+            "ports_open": len(services),
+            "vulnerabilities_found": len(all_vulns),
+            "risk_level": result["risk_summary"].get("risk_level", "UNKNOWN"),
+            "risk_score": result["risk_summary"].get("risk_score", 0)
+        })
 
         return result
 

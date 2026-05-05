@@ -6,8 +6,19 @@ import jsPDF from 'jspdf';
 // Pure Black + White Monochrome Premium Cybersecurity UI
 // ════════════════════════════════════════════════════════════
 
-const API_BASE   = 'https://ai-vapt-project.onrender.com';
+// Use localhost for development, production URL for deployment
+const API_BASE   = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? 'http://localhost:8000'
+  : 'https://ai-vapt-project.onrender.com';
 const ACCESS_KEY = 'WX-E4QB-4ZJY-L5UN-WBSK';
+
+// Simple logger
+const logger = {
+  info: (msg, data) => console.log(`[INFO] ${msg}`, data || ''),
+  warn: (msg, data) => console.warn(`[WARN] ${msg}`, data || ''),
+  error: (msg, data) => console.error(`[ERROR] ${msg}`, data || ''),
+  debug: (msg, data) => console.debug(`[DEBUG] ${msg}`, data || '')
+};
 
 // ── Global CSS ───────────────────────────────────────────────
 const injectCSS = () => {
@@ -576,7 +587,7 @@ const GhostTerminal = ({ si, progress, target, apiDone, scanResult, onCancel }) 
       ()=>{sp();cmd(`whitenx --risk-score ${target}`);setTimeout(()=>line('INF','Computing CVSS v3.1 base scores'),400);setTimeout(()=>line('INF','Finalizing risk report...'),2000);},
     ];
     scripts[si]?.();
-  },[si,apiDone]);
+  },[si,apiDone,cmd,line,sp,target]);
 
   useEffect(()=>{
     if(!apiDone||!scanResult||procRef.current) return;
@@ -602,7 +613,7 @@ const GhostTerminal = ({ si, progress, target, apiDone, scanResult, onCancel }) 
       },d(0)+i*600);
     });
     setTimeout(()=>{sp();line('OK','══════════ SCAN COMPLETE ══════════');setDisp(100);setDone(true);},d(2400));
-  },[apiDone,scanResult]);
+  },[apiDone,scanResult,cmd,line,push,sp]);
 
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
 
@@ -1497,6 +1508,7 @@ const generatePDFLegacy = (result) => {
 // ════════════════════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════════════════════
+// eslint-disable-next-line no-unused-vars
 const generatePDF = (scanResult) => {
   try {
     if (!scanResult || typeof scanResult !== 'object' || Array.isArray(scanResult)) {
@@ -1645,24 +1657,6 @@ const generatePDF = (scanResult) => {
     const sslAnalysis = safeObject(rawResult.ssl_analysis);
     const certificates = safeArray(sslAnalysis.certificates).map((entry) => safeObject(entry));
 
-    const handledKeys = new Set([
-      'target',
-      'scan_id',
-      'id',
-      'vulnerabilities',
-      'port_scan',
-      'fingerprinted_services',
-      'services',
-      'subdomain_enum',
-      'subdomains',
-      'osint',
-      'ssl_analysis'
-    ]);
-
-    const additionalModules = Object.fromEntries(
-      Object.entries(rawResult).filter(([key]) => !handledKeys.has(key))
-    );
-
     const whoisRows = [
       { label: 'Registrar', value: safeString(whois.registrar, 'N/A') },
       { label: 'Organization', value: safeString(whois.organization, 'N/A') },
@@ -1695,16 +1689,6 @@ const generatePDF = (scanResult) => {
       { label: 'Serial Number', value: safeString(certificates[0].serial_number, 'N/A') }
     ] : [];
 
-    const rawModuleSnapshots = [
-      { title: 'Raw Port Scan Module', value: rawPortScan, empty: 'No port scan module available.' },
-      { title: 'Raw Services Module', value: rawServices, empty: 'No services module available.' },
-      { title: 'Raw Vulnerabilities Module', value: safeArray(rawResult.vulnerabilities), empty: 'No vulnerabilities module available.' },
-      { title: 'Raw Subdomain Module', value: safeObject(rawResult.subdomain_enum).subdomains ? rawResult.subdomain_enum : rawResult.subdomains, empty: 'No subdomain module available.' },
-      { title: 'Raw OSINT Module', value: osint, empty: 'No OSINT module available.' },
-      { title: 'Raw SSL Module', value: sslAnalysis, empty: 'No SSL module available.' },
-      { title: 'Additional Modules', value: additionalModules, empty: 'No additional top-level modules available.' }
-    ];
-
     const reportTarget = safeString(rawResult.target, '');
     const scanId = safeString(rawResult.scan_id || rawResult.id, 'N/A').slice(0, 48);
     const generatedAt = new Date().toLocaleString();
@@ -1725,19 +1709,26 @@ const generatePDF = (scanResult) => {
       const font = options.font || 'helvetica';
       const style = options.style || 'normal';
       const size = Math.max(toNumber(options.size, 9), 1);
+      const preserveWhitespace = Boolean(options.preserveWhitespace);
 
       doc.setFont(font, style);
       doc.setFontSize(size);
 
       if (Array.isArray(value)) {
         return value.flatMap((line) => {
-          const safeLine = safeString(line, '');
+          const safeLine = preserveWhitespace
+            ? String(line ?? '')
+            : safeString(line, '');
           const wrapped = doc.splitTextToSize(safeLine, width);
           return wrapped.length ? wrapped : [''];
         });
       }
 
-      return doc.splitTextToSize(safeString(value), width);
+      const preparedValue = preserveWhitespace
+        ? String(value ?? '')
+        : safeString(value);
+
+      return doc.splitTextToSize(preparedValue, width);
     };
 
     const drawText = (value, x, textY, options = {}) => {
@@ -1747,8 +1738,18 @@ const generatePDF = (scanResult) => {
       const maxWidth = Math.max(toNumber(options.maxWidth, contentWidth), 8);
       const lineHeight = Math.max(toNumber(options.lineHeight, fontSize * 0.45 + 1.2), 3.2);
       const lines = Array.isArray(value)
-        ? getLines(value, maxWidth, { font, style, size: fontSize })
-        : getLines(value, maxWidth, { font, style, size: fontSize });
+        ? getLines(value, maxWidth, {
+          font,
+          style,
+          size: fontSize,
+          preserveWhitespace: options.preserveWhitespace
+        })
+        : getLines(value, maxWidth, {
+          font,
+          style,
+          size: fontSize,
+          preserveWhitespace: options.preserveWhitespace
+        });
 
       doc.setFont(font, style);
       doc.setFontSize(fontSize);
@@ -2030,55 +2031,6 @@ const generatePDF = (scanResult) => {
       });
     };
 
-    const renderJsonBlock = (title, value, emptyMessage = 'No data available.') => {
-      startPage(title, true);
-
-      const hasObjectData = value && typeof value === 'object' && Object.keys(safeObject(value)).length > 0;
-      const hasArrayData = Array.isArray(value) && value.length > 0;
-      if (!hasObjectData && !hasArrayData) {
-        roundedRect(margin, y, contentWidth, 14, 3, C.panel, C.border, 'FD');
-        drawText(emptyMessage, pageWidth / 2, y + 8.5, {
-          size: 9,
-          color: C.muted,
-          align: 'center',
-          maxWidth: contentWidth - 10
-        });
-        return;
-      }
-
-      const jsonText = safeString(JSON.stringify(value, null, 2), '{}');
-      const rawLines = jsonText.split('\n');
-      const lines = getLines(rawLines, Math.max(contentWidth - 10, 20), {
-        font: 'courier',
-        style: 'normal',
-        size: 6.6
-      });
-      let index = 0;
-
-      while (index < lines.length) {
-        const availableHeight = pageHeight - bottom - y - 4;
-        const linesPerPage = Math.max(1, Math.floor(availableHeight / 3.8));
-        const chunk = lines.slice(index, index + linesPerPage);
-        const blockHeight = Math.max(14, (chunk.length * 3.8) + 12);
-
-        ensureSpace(blockHeight + 2, `${title} (cont.)`);
-        roundedRect(margin, y, contentWidth, blockHeight, 2.5, C.panelAlt, C.border, 'FD');
-        roundedRect(margin + 3, y + 3, contentWidth - 6, 7, 2, C.panelSoft, C.border, 'FD');
-        drawText('JSON MODULE SNAPSHOT', margin + 6, y + 7.5, {
-          size: 6.4,
-          style: 'bold',
-          color: C.muted,
-          maxWidth: contentWidth - 12
-        });
-        doc.setFont('courier', 'normal');
-        doc.setFontSize(6.6);
-        doc.setTextColor(C.text);
-        doc.text(chunk, margin + 5, y + 14);
-        y += blockHeight + 3;
-        index += chunk.length;
-      }
-    };
-
     drawPageShell();
     y = 34;
 
@@ -2299,9 +2251,74 @@ const generatePDF = (scanResult) => {
       emptyMessage: 'No SSL certificate data was available.'
     });
 
-    rawModuleSnapshots.forEach((module) => {
-      renderJsonBlock(module.title, module.value, module.empty);
-    });
+    const renderSectionBlock = (title, items) => {
+      if (!safeArray(items).length) return;
+      startPage(title, true);
+      drawList(items, margin + 4, contentWidth - 8, title);
+    };
+
+    const renderScopeAndMethodology = () => {
+      const scopeItems = [
+        `Target domain: ${reportTarget || 'N/A'}`,
+        `Testing type: Automated + Validation`,
+        `Subdomain enumeration and service fingerprinting were used to define the external attack surface.`
+      ];
+
+      const methodologyItems = [
+        'Reconnaissance of DNS and public registration data.',
+        'Port scanning and service discovery for exposed assets.',
+        'Vulnerability analysis using scan modules and confirmed findings against reachable services.'
+      ];
+
+      startPage('Scope & Methodology', true);
+      drawText('Scope', margin + 4, y, { size: 10.5, style: 'bold', color: C.white, maxWidth: contentWidth - 8 });
+      y += 8;
+      drawList(scopeItems, margin + 4, contentWidth - 8, 'Scope');
+      y += 4;
+      drawText('Methodology', margin + 4, y, { size: 10.5, style: 'bold', color: C.white, maxWidth: contentWidth - 8 });
+      y += 8;
+      drawList(methodologyItems, margin + 4, contentWidth - 8, 'Methodology');
+    };
+
+    const renderDetailedFindings = () => {
+      if (!vulnerabilities.length) return;
+      startPage('Detailed Findings', true);
+      vulnerabilities.slice(0, 8).forEach((vuln) => {
+        const title = `${safeString(vuln.type)} — Port ${safeString(vuln.port)} (${safeString(vuln.severity)})`;
+        drawText(title, margin + 4, y, { size: 10, style: 'bold', color: C.white, maxWidth: contentWidth - 8 });
+        y += 7;
+        drawText(`Description: ${safeString(vuln.type)} was observed on port ${safeString(vuln.port)}.`, margin + 4, y, { size: 8.5, color: C.muted, maxWidth: contentWidth - 8 });
+        y += 6;
+        drawText(`Validation: Service availability and exposure were confirmed on port ${safeString(vuln.port)}.`, margin + 4, y, { size: 8.5, color: C.muted, maxWidth: contentWidth - 8 });
+        y += 6;
+        drawText(`Recommendation: ${safeString(vuln.recommendation)}`, margin + 4, y, { size: 8.5, color: C.muted, maxWidth: contentWidth - 8 });
+        y += 11;
+      });
+    };
+
+    const misconfigurationItems = [];
+    if (ports.length > 0) misconfigurationItems.push(`Open ports observed: ${ports.map((p) => p.port).join(', ')}`);
+    if (Object.keys(headers).length > 0) {
+      const missingHeaders = Object.entries(headers).filter(([, value]) => !value).map(([key]) => key.toUpperCase());
+      if (missingHeaders.length) misconfigurationItems.push(`Missing security headers: ${missingHeaders.join(', ')}`);
+    }
+    if (osint.osint_score) misconfigurationItems.push(`OSINT trust score: ${safeString(osint.osint_score)}`);
+
+    const attackSurfaceItems = [];
+    attackSurfaceItems.push(`${ports.length} exposed network port(s) identified`);
+    attackSurfaceItems.push(`${services.length} fingerprinted service(s) identified`);
+    if (subdomains.length) attackSurfaceItems.push(`${subdomains.length} discovered subdomain(s)`);
+
+    const remediationItems = [];
+    if (riskLevel === 'CRITICAL' || riskLevel === 'HIGH') remediationItems.push('Prioritize remediation for high-severity findings and exposed services.');
+    if (ports.length) remediationItems.push('Review and restrict access to exposed ports and services.');
+    remediationItems.push('Enforce secure transport and harden remote access controls.');
+
+    renderScopeAndMethodology();
+    renderSectionBlock('Security Misconfigurations', misconfigurationItems);
+    renderSectionBlock('Attack Surface Summary', attackSurfaceItems);
+    renderSectionBlock('Risk & Remediation', remediationItems);
+    renderDetailedFindings();
 
     const totalPages = toNumber(doc.getNumberOfPages(), 1);
     for (let page = 1; page <= totalPages; page += 1) {
@@ -2335,6 +2352,1313 @@ const generatePDF = (scanResult) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
+const generatePentestPDF = (scanResult) => {
+  try {
+    if (!scanResult || typeof scanResult !== 'object' || Array.isArray(scanResult)) {
+      console.error('generatePentestPDF: invalid scan result payload');
+      return false;
+    }
+
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+    const M = 14;
+    const contentW = W - (M * 2);
+
+    const C = {
+      ink: '#111111',
+      panel: '#f5f5f5',
+      line: '#d8d8d8',
+      muted: '#666666',
+      soft: '#8a8a8a',
+      black: '#000000',
+      white: '#ffffff',
+      critical: '#8b0000',
+      high: '#b54708',
+      medium: '#9a6700',
+      low: '#1f5f99',
+      info: '#555555',
+      green: '#1f7a3f'
+    };
+
+    const safeArray = (value) => Array.isArray(value) ? value : [];
+    const safeObject = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const safeString = (value, fallback = 'N/A') => {
+      if (value === null || value === undefined) return fallback;
+      if (Array.isArray(value)) {
+        const joined = value.map((item) => safeString(item, '')).filter(Boolean).join(', ');
+        return joined || fallback;
+      }
+      if (typeof value === 'object') {
+        try {
+          const text = JSON.stringify(value);
+          return text && text !== '{}' ? text : fallback;
+        } catch {
+          return fallback;
+        }
+      }
+      const text = String(value).replace(/\s+/g, ' ').trim();
+      return text || fallback;
+    };
+
+    const raw = safeObject(scanResult.result || scanResult);
+    const portScan = safeObject(raw.port_scan);
+    const portsRaw = safeArray(portScan.open_ports).length ? safeArray(portScan.open_ports) : safeArray(portScan.services);
+    const servicesRaw = safeArray(raw.services).length ? safeArray(raw.services) : safeArray(raw.fingerprinted_services);
+    const subdomainEnum = safeObject(raw.subdomain_enum);
+    const subdomainsRaw = safeArray(subdomainEnum.subdomains).length ? safeArray(subdomainEnum.subdomains) : safeArray(raw.subdomains);
+    const osint = safeObject(raw.osint);
+    const dns = safeObject(osint.dns);
+    const whois = safeObject(osint.whois);
+    const webAnalysis = safeObject(raw.web_analysis);
+    const osintHttp = safeObject(osint.http);
+    const securityHeaders = Object.keys(safeObject(webAnalysis.security_headers)).length
+      ? safeObject(webAnalysis.security_headers)
+      : safeObject(osintHttp.security_headers);
+    const sslAnalysis = safeObject(raw.ssl_analysis);
+    const riskSummary = safeObject(raw.risk_summary);
+
+    const ports = portsRaw.map((entry) => {
+      const item = safeObject(entry);
+      return {
+        port: safeString(item.port, '-'),
+        service: safeString(item.service_name || item.service, 'unknown'),
+        version: safeString(item.version, '-'),
+        state: safeString(item.state, 'open').toUpperCase(),
+        banner: safeString(item.banner, '-')
+      };
+    });
+
+    const services = servicesRaw.map((entry) => {
+      const item = safeObject(entry);
+      return {
+        port: safeString(item.port, '-'),
+        service: safeString(item.service_name || item.service, 'unknown'),
+        version: safeString(item.version, '-'),
+        banner: safeString(item.banner || item.server_header, '-'),
+        cves: safeArray(item.cves)
+      };
+    });
+
+    const recommendations = safeArray(raw.recommendations).map((item) => safeString(item, '')).filter(Boolean);
+    const attackVectors = safeArray(raw.attack_vectors).map((item) => safeObject(item));
+    const technologies = safeArray(webAnalysis.technologies).map((item) => safeString(item, '')).filter(Boolean);
+    const certificates = safeArray(sslAnalysis.certificates).map((item) => safeObject(item));
+
+    const normalizedVulns = safeArray(raw.vulnerabilities).map((entry, index) => {
+      const item = safeObject(entry);
+      const severity = safeString(item.severity, 'LOW').toUpperCase();
+      const title = safeString(item.type || item.name || item.id, 'Security Finding');
+      const cvss = safeString(item.cvss || item.score, '-');
+      const port = safeString(item.port, '-');
+      const service = safeString(item.service || item.service_name, '-');
+      const evidence = safeString(item.evidence || item.description || item.banner, 'Evidence was derived from automated scanner output and service analysis.');
+      const recommendation = safeString(
+        item.recommendation || item.remediation,
+        recommendations[0] || 'Validate the affected component, apply vendor guidance, and retest the control after remediation.'
+      );
+
+      return {
+        id: `WX-${String(index + 1).padStart(3, '0')}`,
+        title,
+        severity,
+        cvss,
+        port,
+        service,
+        description: safeString(item.description || item.evidence, `${title} was identified during the assessment.`),
+        evidence,
+        impact: safeString(item.impact, severity === 'CRITICAL' || severity === 'HIGH'
+          ? 'Successful exploitation could materially affect confidentiality, integrity, or availability.'
+          : 'The issue may increase exposure or weaken defense-in-depth controls.'),
+        recommendation,
+        references: safeString(item.id || item.cwe || item.owasp, 'OWASP WSTG / vendor advisory as applicable')
+      };
+    });
+
+    const counts = {
+      critical: normalizedVulns.filter((v) => v.severity === 'CRITICAL').length,
+      high: normalizedVulns.filter((v) => v.severity === 'HIGH').length,
+      medium: normalizedVulns.filter((v) => v.severity === 'MEDIUM').length,
+      low: normalizedVulns.filter((v) => v.severity === 'LOW').length
+    };
+
+    const riskLevel = safeString(riskSummary.risk_level, counts.critical ? 'CRITICAL' : counts.high ? 'HIGH' : counts.medium ? 'MEDIUM' : counts.low ? 'LOW' : 'INFORMATIONAL').toUpperCase();
+    const riskScore = safeString(riskSummary.risk_score, normalizedVulns.length ? '-' : '0');
+    const target = safeString(raw.target, 'Unknown target');
+    const scanId = safeString(raw.scan_id || raw.id, 'N/A');
+    const generatedAt = new Date().toLocaleString();
+    const scanDuration = safeString(raw.scan_duration ? `${Number(raw.scan_duration).toFixed(1)} seconds` : raw.end_time, 'N/A');
+
+    let y = 18;
+    const severityColor = (sev) => ({
+      CRITICAL: C.critical,
+      HIGH: C.high,
+      MEDIUM: C.medium,
+      LOW: C.low,
+      INFORMATIONAL: C.info,
+      INFO: C.info
+    }[safeString(sev, '').toUpperCase()] || C.info);
+
+    const setFont = (size = 9, style = 'normal', color = C.ink) => {
+      doc.setFont('helvetica', style);
+      doc.setFontSize(size);
+      doc.setTextColor(color);
+    };
+
+    const linesFor = (text, width, size = 9, style = 'normal') => {
+      setFont(size, style);
+      return doc.splitTextToSize(safeString(text), width);
+    };
+
+    const ensure = (height = 18) => {
+      if (y + height <= H - 18) return;
+      addPage();
+    };
+
+    const footer = () => {
+      const page = doc.internal.getNumberOfPages();
+      setFont(7, 'normal', C.soft);
+      doc.text(`WHITENX VAPT Report | ${target}`, M, H - 8);
+      doc.text(`Page ${page}`, W - M, H - 8, { align: 'right' });
+    };
+
+    const addPage = () => {
+      footer();
+      doc.addPage();
+      y = 18;
+    };
+
+    const title = (text, subtitle = '') => {
+      ensure(22);
+      setFont(15, 'bold', C.black);
+      doc.text(safeString(text), M, y);
+      y += 4;
+      doc.setDrawColor(C.black);
+      doc.setLineWidth(0.6);
+      doc.line(M, y, W - M, y);
+      y += 7;
+      if (subtitle) {
+        setFont(8, 'normal', C.muted);
+        const lines = linesFor(subtitle, contentW, 8);
+        doc.text(lines, M, y);
+        y += lines.length * 4.2 + 4;
+      }
+    };
+
+    const paragraph = (text, options = {}) => {
+      const size = options.size || 9;
+      const width = options.width || contentW;
+      const x = options.x || M;
+      const color = options.color || C.ink;
+      const style = options.style || 'normal';
+      const lineHeight = options.lineHeight || 4.6;
+      const lines = linesFor(text, width, size, style);
+      ensure(lines.length * lineHeight + 2);
+      setFont(size, style, color);
+      doc.text(lines, x, y);
+      y += lines.length * lineHeight + (options.after ?? 3);
+      return lines.length;
+    };
+
+    const kvTable = (rows, col1 = 45) => {
+      rows.forEach(([k, v]) => {
+        const valueLines = linesFor(v, contentW - col1 - 6, 8.2);
+        const rowH = Math.max(8, valueLines.length * 4.2 + 4);
+        ensure(rowH);
+        doc.setFillColor('#f7f7f7');
+        doc.rect(M, y - 4.2, contentW, rowH, 'F');
+        doc.setDrawColor(C.line);
+        doc.rect(M, y - 4.2, contentW, rowH);
+        setFont(7.5, 'bold', C.muted);
+        doc.text(safeString(k).toUpperCase(), M + 3, y);
+        setFont(8.2, 'normal', C.ink);
+        doc.text(valueLines, M + col1, y);
+        y += rowH;
+      });
+      y += 5;
+    };
+
+    const pill = (text, x, py, color, fill = '#f5f5f5') => {
+      const w = Math.max(18, doc.getTextWidth(safeString(text)) + 7);
+      doc.setFillColor(fill);
+      doc.setDrawColor(color);
+      doc.roundedRect(x, py - 4.2, w, 6.8, 1.5, 1.5, 'FD');
+      setFont(6.8, 'bold', color);
+      doc.text(safeString(text), x + 3.5, py + 0.3);
+      return w;
+    };
+
+    const table = (columns, rows, options = {}) => {
+      const widths = options.widths || columns.map(() => contentW / columns.length);
+      const rowSize = options.size || 7.5;
+      ensure(16);
+      doc.setFillColor(C.black);
+      doc.rect(M, y - 5, contentW, 9, 'F');
+      let x = M;
+      columns.forEach((col, i) => {
+        setFont(6.8, 'bold', C.white);
+        doc.text(safeString(col).toUpperCase(), x + 2, y);
+        x += widths[i];
+      });
+      y += 6;
+
+      if (!rows.length) {
+        paragraph(options.empty || 'No data available.', { size: 8, color: C.muted });
+        return;
+      }
+
+      rows.forEach((row, rIndex) => {
+        const cellLines = row.map((cell, i) => linesFor(cell, Math.max(widths[i] - 4, 8), rowSize));
+        const rowH = Math.max(8, Math.max(...cellLines.map((lines) => lines.length)) * 4 + 4);
+        ensure(rowH + 2);
+        doc.setFillColor(rIndex % 2 === 0 ? '#ffffff' : '#f7f7f7');
+        doc.rect(M, y - 4.5, contentW, rowH, 'F');
+        doc.setDrawColor(C.line);
+        doc.line(M, y - 4.5 + rowH, W - M, y - 4.5 + rowH);
+        x = M;
+        row.forEach((cell, i) => {
+          setFont(rowSize, i === 0 ? 'bold' : 'normal', i === 1 ? severityColor(cell) : C.ink);
+          doc.text(cellLines[i], x + 2, y);
+          x += widths[i];
+        });
+        y += rowH;
+      });
+      y += 6;
+    };
+
+    const statBox = (label, value, x, boxY, boxW, color = C.black) => {
+      doc.setFillColor('#f4f4f4');
+      doc.setDrawColor(C.line);
+      doc.roundedRect(x, boxY, boxW, 22, 2, 2, 'FD');
+      setFont(6.5, 'bold', C.muted);
+      doc.text(safeString(label).toUpperCase(), x + 3, boxY + 6);
+      setFont(14, 'bold', color);
+      doc.text(safeString(value), x + 3, boxY + 17);
+    };
+
+    const findingBlock = (finding) => {
+      ensure(48);
+      doc.setFillColor('#fafafa');
+      doc.setDrawColor(C.line);
+      doc.roundedRect(M, y - 5, contentW, 12, 2, 2, 'FD');
+      setFont(10, 'bold', C.black);
+      doc.text(`${finding.id} - ${finding.title}`.slice(0, 92), M + 3, y + 2);
+      pill(finding.severity, W - M - 32, y + 2, severityColor(finding.severity));
+      y += 13;
+      kvTable([
+        ['Severity / CVSS', `${finding.severity} / ${finding.cvss}`],
+        ['Affected Asset', `Target: ${target} | Port: ${finding.port} | Service: ${finding.service}`],
+        ['Description', finding.description],
+        ['Evidence', finding.evidence],
+        ['Business Impact', finding.impact],
+        ['Remediation', finding.recommendation],
+        ['References', finding.references]
+      ], 38);
+    };
+
+    // Cover
+    doc.setFillColor(C.black);
+    doc.rect(0, 0, W, H, 'F');
+    setFont(9, 'bold', C.white);
+    doc.text('CONFIDENTIAL SECURITY ASSESSMENT', M, 28);
+    setFont(28, 'bold', C.white);
+    doc.text('WHITENX', M, 58);
+    setFont(17, 'bold', C.white);
+    doc.text('Web Application Penetration Test Report', M, 72);
+    setFont(9, 'normal', '#d0d0d0');
+    doc.text(linesFor('Professional vulnerability assessment report generated from automated VAPT evidence, normalized for executive and engineering audiences.', 150, 9), M, 84);
+    doc.setDrawColor('#ffffff');
+    doc.setLineWidth(0.4);
+    doc.line(M, 112, W - M, 112);
+    setFont(10, 'normal', C.white);
+    doc.text(`Target: ${target}`, M, 128);
+    doc.text(`Scan ID: ${scanId}`, M, 138);
+    doc.text(`Generated: ${generatedAt}`, M, 148);
+    doc.text(`Overall Risk: ${riskLevel}`, M, 158);
+    setFont(7, 'normal', '#bdbdbd');
+    doc.text('Distribution: Authorized security, engineering, and executive stakeholders only.', M, H - 24);
+    doc.text('This report is a point-in-time assessment and should be handled as confidential.', M, H - 16);
+    doc.addPage();
+    y = 18;
+
+    title('Document Control');
+    kvTable([
+      ['Report Version', '1.0'],
+      ['Classification', 'Confidential'],
+      ['Prepared By', 'WHITENX VAPT Platform'],
+      ['Assessment Type', 'External web security assessment and vulnerability analysis'],
+      ['Method References', 'OWASP Web Security Testing Guide, PTES reporting practices, NIST SP 800-115 testing and assessment guidance']
+    ]);
+
+    title('Scope and Limitations');
+    paragraph('The assessment covered the target and externally visible assets identified during this scan. Testing was based on network reachability, OSINT, DNS/subdomain enumeration, web header review, SSL/TLS inspection, service fingerprinting, CVE correlation, and safe application-level probes.');
+    paragraph('Limitations: results reflect a point-in-time view. Authenticated business logic testing, source-code review, exploit chaining, social engineering, and destructive testing are not represented unless explicitly present in the scan evidence.');
+    kvTable([
+      ['Target', target],
+      ['Scan Duration', scanDuration],
+      ['Open Ports', String(ports.length)],
+      ['Services', String(services.length)],
+      ['Subdomains', String(subdomainsRaw.length)],
+      ['Technologies', technologies.length ? technologies.join(', ') : 'Not conclusively identified']
+    ]);
+
+    title('Executive Summary');
+    paragraph(`The assessment identified ${normalizedVulns.length} security findings and ${ports.length} externally reachable open ports for ${target}. The calculated overall risk level is ${riskLevel}${riskScore !== '-' ? ` with a risk score of ${riskScore}` : ''}.`);
+    paragraph('Priority should be given to externally reachable high-value services, confirmed CVEs, missing browser security controls, exposed administrative interfaces, and outdated service versions. Remediation should be verified through retesting after fixes are deployed.');
+    ensure(30);
+    const boxW = (contentW - 8) / 5;
+    const boxY = y;
+    statBox('Critical', counts.critical, M, boxY, boxW, C.critical);
+    statBox('High', counts.high, M + boxW + 2, boxY, boxW, C.high);
+    statBox('Medium', counts.medium, M + (boxW + 2) * 2, boxY, boxW, C.medium);
+    statBox('Low', counts.low, M + (boxW + 2) * 3, boxY, boxW, C.low);
+    statBox('Open Ports', ports.length, M + (boxW + 2) * 4, boxY, boxW, C.black);
+    y += 31;
+
+    title('Methodology');
+    table(
+      ['Phase', 'Objective', 'Evidence Produced'],
+      [
+        ['Planning and Scope', 'Define target boundaries and engagement assumptions.', 'Target, scan ID, timing, limitations'],
+        ['Reconnaissance', 'Collect DNS, WHOIS, SSL, HTTP, and certificate transparency signals.', 'OSINT, DNS records, headers, certificates'],
+        ['Discovery', 'Identify reachable ports, services, versions, and subdomains.', 'Open ports, service fingerprints, subdomain inventory'],
+        ['Vulnerability Analysis', 'Correlate service versions and safe web probes with known weakness patterns.', 'CVEs, application findings, risk summary'],
+        ['Reporting', 'Prioritize risk and provide remediation guidance for engineering action.', 'Findings, impact, evidence, recommendations']
+      ],
+      { widths: [36, 72, 74], size: 7.2 }
+    );
+
+    title('Risk Rating Model');
+    table(
+      ['Rating', 'Meaning', 'Typical SLA'],
+      [
+        ['Critical', 'Likely severe compromise, exposed critical service, or exploit-ready issue.', 'Immediate to 7 days'],
+        ['High', 'Material security weakness with realistic exploitation path.', '7 to 30 days'],
+        ['Medium', 'Exploitable under specific conditions or meaningful hardening gap.', '30 to 60 days'],
+        ['Low', 'Limited direct impact but useful for defense-in-depth improvement.', '60 to 90 days']
+      ],
+      { widths: [28, 112, 42], size: 7.4 }
+    );
+
+    title('Findings Summary');
+    table(
+      ['ID', 'Finding', 'Severity', 'Asset'],
+      normalizedVulns.map((v) => [v.id, v.title, v.severity, `Port ${v.port} ${v.service}`]),
+      { widths: [20, 82, 28, 52], empty: 'No vulnerabilities were identified by this scan.', size: 7.2 }
+    );
+
+    title('Detailed Findings', 'Each finding includes impact, technical evidence, and recommended remediation so engineering teams can reproduce and resolve the issue.');
+    normalizedVulns.slice(0, 25).forEach(findingBlock);
+    if (normalizedVulns.length > 25) {
+      paragraph(`Additional findings were omitted from the PDF detail section for readability. Total findings available in JSON output: ${normalizedVulns.length}.`, { color: C.muted });
+    }
+
+    title('Attack Surface Review');
+    table(
+      ['Port', 'Service', 'Version', 'State', 'Banner'],
+      ports.slice(0, 35).map((p) => [p.port, p.service, p.version, p.state, p.banner.slice(0, 90)]),
+      { widths: [18, 34, 32, 22, 76], empty: 'No open ports were reported.', size: 7 }
+    );
+
+    if (attackVectors.length) {
+      title('Likely Attack Vectors');
+      table(
+        ['Vector', 'Risk', 'Port', 'Description'],
+        attackVectors.slice(0, 20).map((a) => [
+          safeString(a.vector, 'Unknown'),
+          safeString(a.risk, 'UNKNOWN'),
+          safeString(a.port, '-'),
+          safeString(a.description, '-')
+        ]),
+        { widths: [36, 24, 18, 104], size: 7.1 }
+      );
+    }
+
+    title('Web and TLS Controls');
+    table(
+      ['Security Header', 'Status', 'Value'],
+      Object.entries(securityHeaders).map(([key, value]) => [
+        key,
+        value ? 'ENABLED' : 'MISSING',
+        value === true ? 'Present' : safeString(value, 'Not configured')
+      ]),
+      { widths: [58, 28, 96], empty: 'No HTTP security header data was available.', size: 7.1 }
+    );
+
+    if (certificates.length) {
+      const cert = certificates[0];
+      kvTable([
+        ['Certificate Subject', safeString(cert.subject)],
+        ['Issuer', safeString(cert.issuer)],
+        ['Valid From', safeString(cert.notBefore)],
+        ['Valid Until', safeString(cert.notAfter)],
+        ['Days Remaining', safeString(cert.expiry_days)],
+        ['TLS Versions', safeArray(sslAnalysis.tls_versions).join(', ') || 'N/A']
+      ]);
+    }
+
+    title('OSINT and DNS Summary');
+    kvTable([
+      ['Registrar', safeString(whois.registrar)],
+      ['Organization', safeString(whois.organization)],
+      ['Country', safeString(whois.country)],
+      ['A Records', safeArray(dns.a_records).join(', ') || 'None'],
+      ['MX Records', safeArray(dns.mx_records).map((m) => safeObject(m).exchange || m).join(', ') || 'None'],
+      ['NS Records', safeArray(dns.ns_records).join(', ') || 'None']
+    ]);
+
+    title('Prioritized Remediation Plan');
+    const remediationRows = recommendations.length
+      ? recommendations.slice(0, 18).map((rec, index) => [`R${index + 1}`, index < 4 ? 'Immediate' : index < 10 ? 'Short term' : 'Planned', rec])
+      : normalizedVulns.slice(0, 12).map((v, index) => [`R${index + 1}`, v.severity, v.recommendation]);
+    table(
+      ['ID', 'Priority', 'Action'],
+      remediationRows,
+      { widths: [18, 32, 132], empty: 'No remediation actions were generated.', size: 7.3 }
+    );
+
+    title('Appendix A - Evidence Inventory');
+    table(
+      ['Category', 'Count / Status', 'Notes'],
+      [
+        ['Open ports', String(ports.length), 'Network reachability and service identification'],
+        ['Services fingerprinted', String(services.length), 'Banner and protocol-level service evidence'],
+        ['Subdomains', String(subdomainsRaw.length), 'DNS and HTTP liveness checks'],
+        ['Security headers', String(Object.keys(securityHeaders).length), 'Browser security control review'],
+        ['SSL/TLS issues', String(safeArray(sslAnalysis.issues).length), safeArray(sslAnalysis.issues).map((i) => safeString(i.issue, '')).filter(Boolean).join('; ') || 'None reported']
+      ],
+      { widths: [48, 34, 100], size: 7.3 }
+    );
+
+    title('Appendix B - References');
+    table(
+      ['Reference', 'Use in Report'],
+      [
+        ['OWASP Web Security Testing Guide', 'Reporting structure, technical finding detail, remediation-oriented evidence'],
+        ['Penetration Testing Execution Standard', 'Executive/technical audience separation and finding prioritization'],
+        ['NIST SP 800-115', 'Security testing lifecycle: planning, execution, analysis, and reporting'],
+        ['FIRST CVSS', 'Severity context where CVSS data is present'],
+        ['CISA Known Exploited Vulnerabilities', 'Exploit priority context where CVE enrichment is available']
+      ],
+      { widths: [64, 118], size: 7.3 }
+    );
+
+    footer();
+    const cleanTarget = safeString(target, 'report').replace(/[^a-zA-Z0-9_-]/g, '_');
+    doc.save(`WHITENX-Pentest-Report-${cleanTarget}-${Date.now()}.pdf`);
+    return true;
+  } catch (error) {
+    console.error('generatePentestPDF: failed to create PDF', error);
+    return false;
+  }
+};
+
+const loadPublicImageDataUrl = async (assetPath) => {
+  try {
+    const publicUrl = process.env.PUBLIC_URL || '';
+    const response = await fetch(`${publicUrl}/${assetPath}`);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
+const generateWorldWidePentestPDF = async (scanResult) => {
+  try {
+    if (!scanResult || typeof scanResult !== 'object' || Array.isArray(scanResult)) {
+      console.error('generateWorldWidePentestPDF: invalid scan result payload');
+      return false;
+    }
+
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+    const M = 14;
+    const CW = W - (M * 2);
+
+    const C = {
+      bg: '#000000',
+      panel: '#080808',
+      panel2: '#101010',
+      panel3: '#171717',
+      line: '#2d2d2d',
+      line2: '#454545',
+      text: '#f7f7f7',
+      muted: '#b8b8b8',
+      dim: '#777777',
+      ghost: '#3a3a3a',
+      white: '#ffffff',
+      critical: '#ff4d4d',
+      high: '#ff9f43',
+      medium: '#ffd166',
+      low: '#66b3ff',
+      good: '#6ee7a8'
+    };
+
+    const safeArray = (value) => Array.isArray(value) ? value : [];
+    const safeObject = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const safeString = (value, fallback = 'N/A') => {
+      if (value === null || value === undefined) return fallback;
+      if (Array.isArray(value)) {
+        const joined = value.map((item) => safeString(item, '')).filter(Boolean).join(', ');
+        return joined || fallback;
+      }
+      if (typeof value === 'object') {
+        try {
+          const json = JSON.stringify(value);
+          return json && json !== '{}' ? json : fallback;
+        } catch {
+          return fallback;
+        }
+      }
+      const text = String(value).replace(/\s+/g, ' ').trim();
+      return text || fallback;
+    };
+    const trunc = (value, len = 120) => {
+      const text = safeString(value, '');
+      return text.length > len ? `${text.slice(0, len - 3)}...` : text;
+    };
+
+    const raw = safeObject(scanResult.result || scanResult);
+    const portScan = safeObject(raw.port_scan);
+    const portsRaw = safeArray(portScan.open_ports).length ? safeArray(portScan.open_ports) : safeArray(portScan.services);
+    const servicesRaw = safeArray(raw.services).length ? safeArray(raw.services) : safeArray(raw.fingerprinted_services);
+    const subdomainEnum = safeObject(raw.subdomain_enum);
+    const subdomainsRaw = safeArray(subdomainEnum.subdomains).length ? safeArray(subdomainEnum.subdomains) : safeArray(raw.subdomains);
+    const osint = safeObject(raw.osint);
+    const dns = safeObject(osint.dns);
+    const whois = safeObject(osint.whois);
+    const webAnalysis = safeObject(raw.web_analysis);
+    const sslAnalysis = safeObject(raw.ssl_analysis);
+    const riskSummary = safeObject(raw.risk_summary);
+    const attackExplanation = safeObject(raw.attack_explanation);
+    const osintHttp = safeObject(osint.http);
+    const securityHeaders = Object.keys(safeObject(webAnalysis.security_headers)).length
+      ? safeObject(webAnalysis.security_headers)
+      : safeObject(osintHttp.security_headers);
+
+    const target = safeString(raw.target, 'Unknown target');
+    const scanId = safeString(raw.scan_id || raw.id, 'N/A');
+    const generatedAt = new Date().toLocaleString();
+    const duration = raw.scan_duration ? `${Number(raw.scan_duration).toFixed(1)} seconds` : safeString(raw.end_time, 'N/A');
+    const coverLogo = await loadPublicImageDataUrl('logo.jpeg');
+
+    const ports = portsRaw.map((entry) => {
+      const item = safeObject(entry);
+      return {
+        port: safeString(item.port, '-'),
+        service: safeString(item.service_name || item.service, 'unknown'),
+        state: safeString(item.state, 'open').toUpperCase(),
+        version: safeString(item.version, '-'),
+        protocol: safeString(item.protocol, 'tcp'),
+        banner: safeString(item.banner, '-')
+      };
+    });
+    const services = servicesRaw.map((entry) => {
+      const item = safeObject(entry);
+      return {
+        port: safeString(item.port, '-'),
+        service: safeString(item.service_name || item.service, 'unknown'),
+        version: safeString(item.version, '-'),
+        banner: safeString(item.banner || item.server_header, '-'),
+        exploitWeight: item.exploit_weight,
+        cves: safeArray(item.cves)
+      };
+    });
+    const subdomains = subdomainsRaw.map((entry) => {
+      const item = typeof entry === 'string' ? { subdomain: entry } : safeObject(entry);
+      return {
+        subdomain: safeString(item.subdomain || item.host, '-'),
+        status: item.alive ? 'ALIVE' : safeString(item.status, 'DNS_ONLY'),
+        importance: safeString(item.importance, '-'),
+        category: safeString(item.category, '-'),
+        ips: safeArray(item.dns_ips).join(', ') || '-'
+      };
+    });
+    const recommendations = safeArray(raw.recommendations).map((item) => safeString(item, '')).filter(Boolean);
+    const attackVectors = safeArray(raw.attack_vectors).map((item) => safeObject(item));
+    const technologies = safeArray(webAnalysis.technologies).map((item) => safeString(item, '')).filter(Boolean);
+    const certificates = safeArray(sslAnalysis.certificates).map((item) => safeObject(item));
+    const sslIssues = safeArray(sslAnalysis.issues).map((item) => safeObject(item));
+
+    const vulns = safeArray(raw.vulnerabilities).map((entry, index) => {
+      const item = safeObject(entry);
+      const severity = safeString(item.severity, 'LOW').toUpperCase();
+      return {
+        ref: `WX-${String(index + 1).padStart(3, '0')}`,
+        title: safeString(item.type || item.name || item.id, 'Security Finding'),
+        severity,
+        cvss: safeString(item.cvss || item.score, '-'),
+        port: safeString(item.port, '-'),
+        service: safeString(item.service || item.service_name, '-'),
+        confidence: safeString(item.confidence ? `${Math.round(Number(item.confidence) * 100)}%` : item.confidence, '-'),
+        owasp: safeString(item.owasp, '-'),
+        cwe: safeString(item.cwe, '-'),
+        evidence: safeString(item.evidence || item.description || item.banner, 'Finding produced from scanner evidence and service analysis.'),
+        description: safeString(item.description || item.evidence, 'This issue was identified during the assessment and requires validation/remediation by the asset owner.'),
+        impact: safeString(item.impact, severity === 'CRITICAL' || severity === 'HIGH'
+          ? 'A successful attacker may gain a meaningful path toward compromise, data exposure, service disruption, or unauthorized access.'
+          : 'This weakness increases exposure and reduces the effectiveness of layered defensive controls.'),
+        recommendation: safeString(item.recommendation || item.remediation, recommendations[0] || 'Apply vendor guidance, harden the affected component, and validate the fix through retesting.')
+      };
+    });
+
+    const counts = {
+      critical: vulns.filter((v) => v.severity === 'CRITICAL').length,
+      high: vulns.filter((v) => v.severity === 'HIGH').length,
+      medium: vulns.filter((v) => v.severity === 'MEDIUM').length,
+      low: vulns.filter((v) => v.severity === 'LOW').length
+    };
+    const riskLevel = safeString(riskSummary.risk_level, counts.critical ? 'CRITICAL' : counts.high ? 'HIGH' : counts.medium ? 'MEDIUM' : counts.low ? 'LOW' : 'INFORMATIONAL').toUpperCase();
+    const riskScore = safeString(riskSummary.risk_score, '0');
+    const missingHeaders = Object.entries(securityHeaders).filter(([, value]) => !value).map(([key]) => key);
+    const presentHeaders = Object.entries(securityHeaders).filter(([, value]) => value).map(([key]) => key);
+    const webPorts = ports.filter((p) => ['80', '443', '8080', '8443', '8000', '3000', '5000'].includes(String(p.port)));
+    const dbPorts = ports.filter((p) => ['3306', '5432', '27017', '6379', '9200'].includes(String(p.port)));
+    const remotePorts = ports.filter((p) => ['22', '23', '3389', '5900', '5901'].includes(String(p.port)));
+
+    let y = 18;
+    const sevColor = (severity) => ({
+      CRITICAL: C.critical,
+      HIGH: C.high,
+      MEDIUM: C.medium,
+      LOW: C.low,
+      INFORMATIONAL: C.muted,
+      INFO: C.muted
+    }[safeString(severity, '').toUpperCase()] || C.muted);
+    const displayVectorRisk = (vector, risk, port) => {
+      const v = safeString(vector, '').toLowerCase();
+      const p = String(port);
+      if ((v.includes('http') || ['80', '443', '8080', '8443'].includes(p)) && safeString(risk, '').toUpperCase() === 'HIGH') {
+        return 'WEB EXPOSURE';
+      }
+      return safeString(risk, 'UNKNOWN');
+    };
+    const displayVectorDescription = (vector, description, port) => {
+      const v = safeString(vector, '').toLowerCase();
+      const p = String(port);
+      if (v.includes('http') || ['80', '443', '8080', '8443'].includes(p)) {
+        return 'HTTP/HTTPS exposure is normally expected for a public website. Treat this as a review item: validate TLS, headers, app hardening, authentication, and patch status rather than assuming the port itself is a vulnerability.';
+      }
+      return safeString(description, '-');
+    };
+
+    const font = (size = 9, style = 'normal', color = C.text, family = 'helvetica') => {
+      doc.setFont(family, style);
+      doc.setFontSize(size);
+      doc.setTextColor(color);
+    };
+    const lines = (text, width, size = 8.5, style = 'normal') => {
+      font(size, style);
+      return doc.splitTextToSize(safeString(text), Math.max(width, 12));
+    };
+    const pageBg = (mode = 'body') => {
+      doc.setFillColor(C.bg);
+      doc.rect(0, 0, W, H, 'F');
+      if (mode === 'cover') {
+        doc.setFillColor('#050505');
+        doc.rect(0, 0, W, 34, 'F');
+      }
+      doc.setFillColor(mode === 'cover' ? '#111111' : '#080808');
+      for (let dx = 24; dx < W - 10; dx += 24) {
+        for (let dy = 48; dy < H - 24; dy += 32) {
+          if ((Math.floor(dx + dy) % 3) === 0) doc.circle(dx, dy, 0.32, 'F');
+        }
+      }
+      font(mode === 'cover' ? 54 : 42, 'bold', mode === 'cover' ? '#070707' : '#050505');
+      doc.text('WHITENX', W - 18, H - 40, { align: 'right' });
+    };
+    const footer = () => {
+      const page = doc.internal.getNumberOfPages();
+      font(6.5, 'normal', C.dim);
+      doc.text('WHITENX CONFIDENTIAL', M, H - 8);
+      doc.text(`Page ${page}`, W - M, H - 8, { align: 'right' });
+    };
+    const addPage = () => {
+      footer();
+      doc.addPage();
+      pageBg('body');
+      y = 18;
+    };
+    const ensure = (height = 18) => {
+      if (y + height <= H - 18) return;
+      addPage();
+    };
+    const paragraph = (value, opts = {}) => {
+      const size = opts.size || 9.2;
+      const width = opts.width || CW;
+      const lns = lines(value, width, size, opts.style || 'normal');
+      const h = lns.length * (opts.lineHeight || 5.1);
+      ensure(h + 4);
+      font(size, opts.style || 'normal', opts.color || C.muted);
+      doc.text(lns, opts.x || M, y);
+      y += h + (opts.after ?? 4);
+    };
+    const section = (label, title, subtitle = '') => {
+      ensure(82);
+      font(7, 'bold', C.dim);
+      if (label) doc.text(label.toUpperCase(), M, y);
+      y += 7;
+      font(16, 'bold', C.white);
+      doc.text(safeString(title).toUpperCase(), M, y);
+      doc.setDrawColor(C.white);
+      doc.setLineWidth(0.55);
+      doc.line(M, y + 4, W - M, y + 4);
+      y += 12;
+      if (subtitle) paragraph(subtitle, { size: 8.7, color: C.dim, after: 5 });
+    };
+    const card = (x, py, w, h, opts = {}) => {
+      doc.setFillColor(opts.fill || C.panel);
+      doc.setDrawColor(opts.stroke || C.line);
+      doc.roundedRect(x, py, w, h, opts.radius || 3, opts.radius || 3, 'FD');
+    };
+    const stat = (label, value, x, py, w, color = C.white) => {
+      card(x, py, w, 23, { fill: C.panel, stroke: C.line });
+      font(6.2, 'bold', C.dim);
+      doc.text(label.toUpperCase(), x + 3, py + 6);
+      font(15, 'bold', color);
+      doc.text(safeString(value), x + 3, py + 18);
+    };
+    const coverLine = (label, value, x, py, width) => {
+      font(6.6, 'bold', C.dim);
+      doc.text(label.toUpperCase(), x, py);
+      font(8.4, 'normal', C.text);
+      const lns = lines(value, width, 8.4);
+      doc.text(lns, x, py + 6);
+      return Math.max(12, lns.length * 4.4 + 8);
+    };
+    const badge = (label, x, py, color = C.white) => {
+      const w = Math.max(20, doc.getTextWidth(safeString(label)) + 8);
+      doc.setFillColor('#0c0c0c');
+      doc.setDrawColor(color);
+      doc.roundedRect(x, py - 4.5, w, 7.5, 2, 2, 'FD');
+      font(6.6, 'bold', color);
+      doc.text(safeString(label).toUpperCase(), x + 4, py + 0.8);
+      return w;
+    };
+    const table = (cols, rows, opts = {}) => {
+      const widths = opts.widths || cols.map(() => CW / cols.length);
+      const size = opts.size || 7.8;
+      ensure(16);
+      card(M, y - 6, CW, 10, {
+        fill: opts.darkHeader ? C.panel2 : C.white,
+        stroke: opts.darkHeader ? C.panel2 : C.white,
+        radius: 2
+      });
+      let x = M;
+      cols.forEach((col, i) => {
+        font(6.3, 'bold', opts.darkHeader ? C.text : C.bg);
+        doc.text(safeString(col).toUpperCase(), x + 2, y);
+        x += widths[i];
+      });
+      y += 7;
+      if (!rows.length) {
+        paragraph(opts.empty || 'No data available for this module.', { size: 8, color: C.dim });
+        return;
+      }
+      rows.forEach((row) => {
+        const wrapped = row.map((cell, i) => lines(cell, Math.max(widths[i] - 4, 8), size));
+        const rowH = Math.max(9.5, Math.max(...wrapped.map((l) => l.length)) * 4.1 + 4);
+        ensure(rowH + 2);
+        if (opts.softRows) {
+          doc.setFillColor(C.panel);
+          doc.roundedRect(M, y - 5, CW, rowH, 1.5, 1.5, 'F');
+        } else {
+          card(M, y - 5, CW, rowH, { fill: C.panel, stroke: C.line, radius: 1.5 });
+        }
+        x = M;
+        row.forEach((cell, i) => {
+          const color = opts.severityCol === i
+            ? sevColor(cell)
+            : (opts.brightCols || []).includes(i)
+              ? C.text
+              : (opts.mutedCols || []).includes(i)
+                ? C.dim
+                : C.muted;
+          const style = i === 0 || (opts.boldCols || []).includes(i) ? 'bold' : 'normal';
+          font(size, style, color);
+          doc.text(wrapped[i], x + 2, y);
+          x += widths[i];
+        });
+        y += rowH + 1.5;
+      });
+      y += 5;
+    };
+    const kv = (rows) => {
+      rows.forEach(([key, value]) => {
+        const lns = lines(value, CW - 54, 8.3);
+        const h = Math.max(10, lns.length * 4.2 + 4);
+        ensure(h + 2);
+        card(M, y - 5, CW, h, { fill: C.panel, stroke: C.line, radius: 1.8 });
+        font(6.6, 'bold', C.dim);
+        doc.text(safeString(key).toUpperCase(), M + 3, y);
+        font(8.3, 'normal', C.muted);
+        doc.text(lns, M + 52, y);
+        y += h + 1.5;
+      });
+      y += 4;
+    };
+    const bulletList = (items, opts = {}) => {
+      safeArray(items).filter(Boolean).forEach((item) => {
+        const lns = lines(item, (opts.width || CW) - 8, opts.size || 8.7);
+        const h = lns.length * 4.3 + 2;
+        ensure(h);
+        font(opts.size || 8.7, 'normal', opts.color || C.muted);
+        doc.text('-', opts.x || M, y);
+        doc.text(lns, (opts.x || M) + 5, y);
+        y += h;
+      });
+      y += opts.after ?? 4;
+    };
+    const insightGrid = (items) => {
+      const gap = 4;
+      const w = (CW - (gap * 2)) / 3;
+      let maxH = 0;
+      const prepared = items.map((item) => {
+        const bodyLines = lines(item.body, w - 8, 7.8);
+        const h = 31 + bodyLines.length * 4.0;
+        maxH = Math.max(maxH, h);
+        return { ...item, bodyLines, h };
+      });
+      ensure(maxH + 8);
+      prepared.forEach((item, index) => {
+        const x = M + index * (w + gap);
+        card(x, y - 5, w, maxH, { fill: C.panel, stroke: item.color || C.line, radius: 3 });
+        font(6.2, 'bold', item.color || C.white);
+        doc.text(item.kicker.toUpperCase(), x + 4, y + 1);
+        font(9.8, 'bold', C.white);
+        doc.text(lines(item.title, w - 8, 9.8, 'bold'), x + 4, y + 9);
+        font(7.8, 'normal', C.muted);
+        doc.text(item.bodyLines, x + 4, y + 21);
+      });
+      y += maxH + 7;
+    };
+    const callout = (heading, body, color = C.white) => {
+      const bodyLines = lines(body, CW - 12, 8.7);
+      const h = Math.max(25, bodyLines.length * 4.5 + 17);
+      ensure(h + 5);
+      card(M, y - 5, CW, h, { fill: '#050505', stroke: color, radius: 3 });
+      font(7, 'bold', color);
+      doc.text(heading.toUpperCase(), M + 5, y + 1);
+      font(8.7, 'normal', C.muted);
+      doc.text(bodyLines, M + 5, y + 10);
+      y += h + 6;
+    };
+    let rawIntroShown = false;
+    const rawBlock = (label, value) => {
+      const summarize = (item) => {
+        if (item === null || item === undefined) return 'N/A';
+        if (Array.isArray(item)) return `${item.length} item(s): ${trunc(JSON.stringify(item.slice(0, 3)), 150)}`;
+        if (typeof item === 'object') return trunc(JSON.stringify(item), 170);
+        return trunc(item, 170);
+      };
+
+      let rows = [];
+      if (Array.isArray(value)) {
+        rows = value.slice(0, 14).map((item, index) => [
+          `Item ${index + 1}`,
+          typeof item === 'object' && item ? Object.keys(item).slice(0, 4).join(', ') || 'value' : 'value',
+          summarize(item)
+        ]);
+      } else if (value && typeof value === 'object') {
+        rows = Object.entries(value).slice(0, 18).map(([key, val]) => [
+          key,
+          Array.isArray(val) ? 'array' : typeof val,
+          summarize(val)
+        ]);
+      } else {
+        rows = [['Value', typeof value, summarize(value)]];
+      }
+
+      ensure(28);
+      font(11, 'bold', C.white);
+      doc.text(safeString(label).toUpperCase(), M, y);
+      y += 4;
+      doc.setDrawColor(C.line2);
+      doc.setLineWidth(0.3);
+      doc.line(M, y, W - M, y);
+      y += 7;
+      if (!rawIntroShown) {
+        paragraph('Readable raw evidence summary from the scanner output. Long nested values are shortened for readability; full data remains available in the JSON view.', {
+          size: 7,
+          color: C.dim,
+          after: 3
+        });
+        rawIntroShown = true;
+      }
+      table(
+        ['Field', 'Type', 'Evidence Value'],
+        rows,
+        { widths: [42, 24, 116], size: 6.9, boldCols: [2], brightCols: [2], darkHeader: true, softRows: true, empty: 'No raw evidence available.' }
+      );
+    };
+
+    // Cover page
+    pageBg('cover');
+    font(7.5, 'bold', C.dim);
+    doc.text('CONFIDENTIAL', M, 24);
+    doc.text('WEB APPLICATION SECURITY ASSESSMENT', W - M, 24, { align: 'right' });
+    if (coverLogo) {
+      doc.setFillColor('#101010');
+      doc.circle(W - M - 25, 58, 22, 'F');
+      doc.setFillColor('#181818');
+      doc.circle(W - M - 25, 58, 15, 'F');
+      doc.addImage(coverLogo, 'JPEG', W - M - 39, 43, 28, 28);
+    }
+    font(37, 'bold', C.white);
+    doc.text('WHITENX', M, 63);
+    font(16, 'bold', C.white);
+    doc.text('Vulnerability Assessment & Penetration Testing Report', M, 80);
+    font(8.8, 'normal', C.muted);
+    doc.text(lines('Security assessment report with executive summary, technical findings, remediation roadmap, and retest evidence guidance.', 132, 8.8), M, 91);
+    doc.setDrawColor(C.white);
+    doc.setLineWidth(0.55);
+    doc.line(M, 109, W - M, 109);
+
+    card(M, 126, CW, 76, { fill: '#050505', stroke: '#606060', radius: 3 });
+    coverLine('Prepared For', target, M + 8, 142, 72);
+    coverLine('Prepared By', 'WHITENX VAPT Platform', M + 100, 142, 70);
+    coverLine('Assessment Type', 'External Web Application and Internet-Facing Attack Surface Assessment', M + 8, 166, 72);
+    coverLine('Overall Risk', riskLevel, M + 100, 166, 70);
+    coverLine('Report Date', generatedAt, M + 8, 190, 72);
+    coverLine('Report ID', scanId.length > 24 ? `${scanId.slice(0, 24)}...` : scanId, M + 100, 190, 70);
+    font(7, 'normal', C.dim);
+    doc.text(lines('This report is designed for leadership and engineering teams: clear to review, practical to fix, and ready for post-remediation retesting.', CW, 7), M, 222);
+    font(6.5, 'normal', C.dim);
+    doc.text('Distribution: Authorized stakeholders only. Do not redistribute without approval.', W / 2, 266, { align: 'center' });
+    footer();
+    doc.addPage();
+    pageBg('body');
+    y = 18;
+
+    section('00', 'Table of Contents', 'Professional VAPT reports separate executive decisions from technical remediation detail.');
+    table(
+      ['Section', 'Title', 'Purpose'],
+      [
+        ['01', 'Assessment Snapshot', 'Business-facing narrative and assessment value'],
+        ['02', 'Report Control', 'Document ownership, classification, methodology references'],
+        ['03', 'Executive Risk Dashboard', 'Leadership summary and risk posture'],
+        ['04', 'Scope, Rules, and Limitations', 'What was and was not tested'],
+        ['05', 'Methodology and Test Coverage', 'Assessment phases and evidence generated'],
+        ['06', 'Findings Summary', 'Prioritized list of issues'],
+        ['07', 'Detailed Technical Findings', 'Evidence, impact, and remediation'],
+        ['08', 'Attack Surface Intelligence', 'Ports, vectors, exposure classes'],
+        ['09', 'Service and CVE Intelligence', 'Fingerprinting and vulnerability correlation'],
+        ['10', 'Web Security Headers and TLS', 'Browser and transport security controls'],
+        ['11', 'OSINT, DNS, and Subdomains', 'External intelligence and discovered assets'],
+        ['12', 'Advantages and Disadvantages', 'Business interpretation of posture'],
+        ['13', 'Remediation Roadmap', 'Action plan and timelines'],
+        ['14', 'Retest Readiness', 'Closure loop and evidence expectations'],
+        ['15-16', 'Appendices', 'Raw evidence and severity references']
+      ],
+      { widths: [24, 58, 100], size: 6.9 }
+    );
+
+    section('01', 'Assessment Snapshot', 'A concise front-of-report narrative for decision makers before the technical detail begins.');
+    insightGrid([
+      {
+        kicker: 'Outcome',
+        title: 'Clear Risk Posture',
+        body: `${target} was assessed across internet-facing exposure, service fingerprinting, web controls, TLS, OSINT, and vulnerability evidence. Overall posture is ${riskLevel}.`,
+        color: sevColor(riskLevel)
+      },
+      {
+        kicker: 'Engineering',
+        title: 'Actionable Fix List',
+        body: `${vulns.length} finding(s), ${recommendations.length || vulns.length} remediation action(s), and ${ports.length} exposed port(s) are organized for ownership and retesting.`,
+        color: C.white
+      },
+      {
+        kicker: 'Assurance',
+        title: 'Evidence-Ready',
+        body: 'The report separates leadership summary, technical evidence, raw data appendix, and remediation roadmap for audit and stakeholder review.',
+        color: C.good
+      }
+    ]);
+    callout(
+      'Assessment Message',
+      `This assessment provides a point-in-time security view of ${target}. The most valuable next step is to assign owners to Critical/High items, reduce unnecessary exposure, harden web and TLS controls, and perform a retest after remediation.`
+    );
+    table(
+      ['What Looks Good', 'What Needs Attention', 'Next Move'],
+      [
+        [
+          services.length ? 'Services are inventoried and fingerprinted for ownership.' : 'No service inventory gaps reported by scanner.',
+          vulns.length ? `${counts.critical + counts.high} Critical/High issue(s) require priority review.` : 'Automated findings are clean, but manual validation is still recommended.',
+          'Create remediation tickets with asset owner, severity, SLA, and retest evidence.'
+        ],
+        [
+          presentHeaders.length ? `${presentHeaders.length} browser security header(s) detected.` : 'Header baseline can be established quickly.',
+          missingHeaders.length ? `${missingHeaders.length} security header(s) missing or not confirmed.` : 'No missing security headers reported.',
+          'Implement missing headers in staging, validate, then promote to production.'
+        ],
+        [
+          certificates.length ? 'TLS certificate evidence is available.' : 'TLS evidence was not available for review.',
+          sslIssues.length ? `${sslIssues.length} TLS/certificate issue(s) require investigation.` : 'No TLS issue reported by the scanner.',
+          'Schedule TLS expiry and weak-protocol monitoring.'
+        ]
+      ],
+      { widths: [60, 61, 61], size: 6.6 }
+    );
+
+    section('02', 'Report Control', 'Document metadata, scope assumptions, and confidentiality guidance.');
+    kv([
+      ['Classification', 'Confidential - restricted to authorized business, engineering, and security stakeholders.'],
+      ['Assessment Type', 'External web application and internet-facing attack surface assessment.'],
+      ['Report Version', '1.0'],
+      ['Methodology Alignment', 'OWASP WSTG reporting guidance, PTES-style executive/technical split, NIST SP 800-115 assessment lifecycle, and CVSS-inspired risk language.'],
+      ['Point-in-Time Notice', 'This report reflects evidence available at scan time. Risk can change when systems, DNS, services, dependencies, or controls change.']
+    ]);
+
+    section('03', 'Executive Risk Dashboard', 'A board-level view first, with technical evidence later.');
+    paragraph(`The assessment of ${target} identified ${vulns.length} security finding(s), ${ports.length} open port(s), ${services.length} fingerprinted service(s), and ${subdomains.length} discovered subdomain record(s). The computed risk posture is ${riskLevel} with score ${riskScore}.`, { color: C.muted });
+    const sw = (CW - 10) / 5;
+    stat('Critical', counts.critical, M, y, sw, C.critical);
+    stat('High', counts.high, M + sw + 2.5, y, sw, C.high);
+    stat('Medium', counts.medium, M + (sw + 2.5) * 2, y, sw, C.medium);
+    stat('Low', counts.low, M + (sw + 2.5) * 3, y, sw, C.low);
+    stat('Risk', riskLevel, M + (sw + 2.5) * 4, y, sw, sevColor(riskLevel));
+    y += 32;
+    table(
+      ['Security Domain', 'Observed Position', 'Advantage', 'Disadvantage / Risk'],
+      [
+        ['Network Exposure', `${ports.length} open port(s)`, ports.length < 4 ? 'Small exposed surface' : 'Clear visibility of reachable services', ports.length ? 'Each exposed service requires hardening and monitoring' : 'No disadvantage identified from port data'],
+        ['Web Controls', `${presentHeaders.length} present / ${missingHeaders.length} missing`, presentHeaders.length ? 'Some browser-side protections detected' : 'No security headers confirmed', missingHeaders.length ? `Missing controls: ${missingHeaders.slice(0, 4).join(', ')}` : 'No missing headers reported'],
+        ['TLS / Certificates', `${certificates.length} certificate record(s)`, sslIssues.length ? 'TLS evidence collected for action' : 'No TLS issue reported by scanner', sslIssues.length ? `${sslIssues.length} SSL/TLS issue(s) require review` : 'Certificate review limited to collected evidence'],
+        ['Vulnerability Data', `${vulns.length} finding(s)`, 'Findings are prioritized for remediation', vulns.length ? 'Requires fix ownership, validation, and retest' : 'Automated scan cannot prove absence of all flaws']
+      ],
+      { widths: [38, 39, 50, 55], size: 6.7 }
+    );
+
+    section('04', 'Scope, Rules, and Limitations');
+    kv([
+      ['Primary Target', target],
+      ['Scan Duration', duration],
+      ['Detected Technologies', technologies.length ? technologies.join(', ') : 'No technology fingerprint was conclusively identified.'],
+      ['In Scope Evidence', 'DNS, WHOIS, certificate data, subdomains, ports, service banners, web headers, SSL/TLS, CVE correlation, safe web probes, risk scoring, attack vector mapping.'],
+      ['Not Fully Covered', 'Authenticated workflows, payment/business logic abuse, source code review, social engineering, password spraying, destructive exploitation, chained manual exploitation, and compliance attestation.'],
+      ['Testing Character', 'Non-destructive and evidence-oriented. Findings should be manually validated before high-risk business decisions.']
+    ]);
+
+    section('05', 'Methodology and Test Coverage');
+    table(
+      ['Phase', 'What Was Done', 'Information Captured', 'Value'],
+      [
+        ['Recon', 'WHOIS, DNS, HTTP, CT, OSINT collection', 'Ownership, DNS posture, headers, certificates', 'Defines target context and public exposure'],
+        ['Discovery', 'Subdomain and open-port enumeration', 'Alive assets, ports, services, protocols', 'Shows external attack surface'],
+        ['Fingerprinting', 'Banner and protocol analysis', 'Versions, server headers, service names', 'Enables CVE and hardening checks'],
+        ['Vulnerability Analysis', 'CVE matching and safe application probes', 'Severity, CVSS, evidence, affected ports', 'Prioritizes remediation work'],
+        ['Risk Modeling', 'Counts, exposure, attack vectors, recommendations', 'Risk level and remediation plan', 'Turns raw data into decisions']
+      ],
+      { widths: [29, 55, 50, 48], size: 6.8 }
+    );
+
+    section('06', 'Findings Summary');
+    table(
+      ['Ref', 'Finding', 'Severity', 'Port', 'Evidence'],
+      vulns.map((v) => [v.ref, trunc(v.title, 48), v.severity, v.port, trunc(v.evidence, 76)]),
+      { widths: [17, 56, 24, 16, 69], severityCol: 2, empty: 'No vulnerabilities were reported by the scan.', size: 6.8 }
+    );
+
+    section('07', 'Detailed Technical Findings', 'Each finding is written so an engineering team can understand impact and start remediation.');
+    vulns.slice(0, 30).forEach((v) => {
+      ensure(72);
+      card(M, y - 5, CW, 15, { fill: C.panel2, stroke: sevColor(v.severity), radius: 2 });
+      font(8.8, 'bold', C.white);
+      doc.text(`${v.ref} | ${trunc(v.title, 78)}`, M + 3, y + 2);
+      badge(v.severity, W - M - 35, y + 2, sevColor(v.severity));
+      y += 17;
+      kv([
+        ['Affected Asset', `Target ${target}; port ${v.port}; service ${v.service}; CVSS ${v.cvss}; confidence ${v.confidence}`],
+        ['Description', v.description],
+        ['Evidence', v.evidence],
+        ['Impact', v.impact],
+        ['Remediation', v.recommendation],
+        ['Taxonomy', `OWASP: ${v.owasp}; CWE: ${v.cwe}`]
+      ]);
+    });
+    if (vulns.length > 30) {
+      paragraph(`Only the first 30 detailed findings are expanded for readability. Full finding count in JSON output: ${vulns.length}.`, { color: C.dim });
+    }
+
+    section('08', 'Attack Surface Intelligence');
+    table(
+      ['Port', 'Protocol', 'Service', 'Version', 'Banner'],
+      ports.slice(0, 50).map((p) => [p.port, p.protocol, p.service, p.version, trunc(p.banner, 68)]),
+      { widths: [16, 22, 35, 29, 80], empty: 'No open ports were reported.', size: 6.8 }
+    );
+    table(
+      ['Vector', 'Risk', 'Port', 'Description'],
+      attackVectors.slice(0, 25).map((a) => [
+        trunc(a.vector, 32),
+        displayVectorRisk(a.vector, a.risk, a.port),
+        safeString(a.port, '-'),
+        trunc(displayVectorDescription(a.vector, a.description, a.port), 92)
+      ]),
+      { widths: [36, 23, 17, 106], severityCol: 1, empty: 'No attack vectors were generated.', size: 6.8 }
+    );
+    table(
+      ['Exposure Class', 'Count', 'Why It Matters'],
+      [
+        ['Web Services', String(webPorts.length), 'Open HTTP/HTTPS is expected for public websites. The risk comes from weak TLS, missing headers, outdated frameworks, exposed admin paths, or exploitable application flaws.'],
+        ['Database Services', String(dbPorts.length), 'Public database ports can create direct data exposure or brute-force opportunities.'],
+        ['Remote Access', String(remotePorts.length), 'Remote access services need MFA, rate limits, allowlisting, and strict monitoring.']
+      ],
+      { widths: [42, 22, 118], size: 6.9 }
+    );
+
+    section('09', 'Service and CVE Intelligence');
+    table(
+      ['Port', 'Service', 'Version', 'CVEs', 'Exploit Weight'],
+      services.slice(0, 45).map((s) => [
+        s.port,
+        s.service,
+        s.version,
+        String(s.cves.length),
+        s.exploitWeight ? `${Math.round(Number(s.exploitWeight) * 100)}%` : '-'
+      ]),
+      { widths: [18, 44, 40, 22, 58], size: 6.9, empty: 'No service fingerprint data was available.' }
+    );
+    services.filter((s) => s.cves.length).slice(0, 12).forEach((s) => {
+      rawBlock(`CVE sample for ${s.service} port ${s.port}`, s.cves.slice(0, 5));
+    });
+
+    section('10', 'Web Security Headers and TLS');
+    table(
+      ['Control', 'Status', 'Security Meaning'],
+      [
+        ['Strict-Transport-Security', securityHeaders['strict-transport-security'] ? 'PRESENT' : 'MISSING', 'Forces HTTPS and reduces downgrade/SSL stripping risk.'],
+        ['Content-Security-Policy', securityHeaders['content-security-policy'] ? 'PRESENT' : 'MISSING', 'Limits script execution and reduces XSS impact.'],
+        ['X-Frame-Options', securityHeaders['x-frame-options'] ? 'PRESENT' : 'MISSING', 'Reduces clickjacking exposure.'],
+        ['X-Content-Type-Options', securityHeaders['x-content-type-options'] ? 'PRESENT' : 'MISSING', 'Prevents MIME sniffing attacks.'],
+        ['Referrer-Policy', securityHeaders['referrer-policy'] ? 'PRESENT' : 'MISSING', 'Limits sensitive URL leakage through referrers.'],
+        ['Permissions-Policy', securityHeaders['permissions-policy'] ? 'PRESENT' : 'MISSING', 'Restricts browser feature abuse.']
+      ],
+      { widths: [58, 30, 94], size: 6.9 }
+    );
+    if (certificates.length) {
+      const cert = certificates[0];
+      kv([
+        ['Certificate Subject', safeString(cert.subject)],
+        ['Issuer', safeString(cert.issuer)],
+        ['Valid From', safeString(cert.notBefore)],
+        ['Valid Until', safeString(cert.notAfter)],
+        ['Days Remaining', safeString(cert.expiry_days)],
+        ['TLS Versions', safeArray(sslAnalysis.tls_versions).join(', ') || 'N/A'],
+        ['TLS Issues', sslIssues.map((i) => safeString(i.issue, '')).filter(Boolean).join('; ') || 'None reported']
+      ]);
+    }
+
+    section('11', 'OSINT, DNS, and Subdomains');
+    kv([
+      ['Registrar', safeString(whois.registrar)],
+      ['Organization', safeString(whois.organization)],
+      ['Country', safeString(whois.country)],
+      ['Created', safeString(whois.creation_date)],
+      ['Expires', safeString(whois.expiration_date)],
+      ['A Records', safeArray(dns.a_records).join(', ') || 'None'],
+      ['AAAA Records', safeArray(dns.aaaa_records).join(', ') || 'None'],
+      ['MX Records', safeArray(dns.mx_records).map((m) => safeObject(m).exchange || m).join(', ') || 'None'],
+      ['NS Records', safeArray(dns.ns_records).join(', ') || 'None'],
+      ['TXT Records', safeArray(dns.txt_records).slice(0, 5).join(', ') || 'None']
+    ]);
+    table(
+      ['Subdomain', 'Status', 'Importance', 'Category', 'IPs'],
+      subdomains.slice(0, 45).map((s) => [trunc(s.subdomain, 42), s.status, s.importance, trunc(s.category, 24), trunc(s.ips, 50)]),
+      { widths: [52, 22, 24, 35, 49], empty: 'No subdomains were discovered.', size: 6.6 }
+    );
+
+    section('12', 'Advantages, Disadvantages, and Business Meaning');
+    table(
+      ['Area', 'Advantage', 'Disadvantage', 'Business Meaning'],
+      [
+        ['Current Visibility', 'The platform produced structured evidence across ports, services, OSINT, TLS, headers, and findings.', 'Automated evidence still requires human validation for final risk acceptance.', 'Leadership gets a fast view while engineers receive actionable artifacts.'],
+        ['External Exposure', ports.length ? 'Reachable services are inventoried and can now be owned.' : 'No exposed ports were reported.', ports.length ? 'Every exposed port creates patching, monitoring, and access-control obligations.' : 'Low visibility can still miss authenticated app flaws.', 'Exposure management should become recurring, not one-time.'],
+        ['Security Headers', presentHeaders.length ? 'Some browser hardening controls exist.' : 'Header posture can be improved quickly.', missingHeaders.length ? 'Missing headers increase clickjacking, XSS, downgrade, or leakage impact.' : 'No major header disadvantage reported.', 'Header fixes are usually low-cost and high-value.'],
+        ['Vulnerability Posture', vulns.length ? 'Findings are ranked and can be assigned.' : 'No automated finding was reported.', vulns.length ? 'Open findings create remediation debt until retested.' : 'No finding does not equal full assurance.', 'Remediation should be tracked to closure with retest evidence.']
+      ],
+      { widths: [32, 50, 50, 50], size: 6.4 }
+    );
+
+    section('13', 'Prioritized Remediation Roadmap');
+    const roadmap = recommendations.length
+      ? recommendations.slice(0, 22).map((rec, i) => [`R-${String(i + 1).padStart(2, '0')}`, i < 5 ? '0-7 days' : i < 13 ? '7-30 days' : '30-90 days', trunc(rec, 118)])
+      : vulns.slice(0, 16).map((v, i) => [`R-${String(i + 1).padStart(2, '0')}`, v.severity, trunc(v.recommendation, 118)]);
+    table(
+      ['ID', 'Window', 'Action'],
+      roadmap,
+      { widths: [18, 31, 133], empty: 'No remediation actions were produced.', size: 6.9 }
+    );
+    bulletList([
+      'Assign an owner for each Critical and High issue before implementation work begins.',
+      'Patch or mitigate internet-facing service CVEs first, then harden configuration gaps.',
+      'Retest after remediation and attach evidence to the closure ticket.',
+      'Convert recurring checks into monitoring: exposed ports, TLS expiry, DNS drift, and header regressions.'
+    ]);
+
+    section('14', 'Retest Readiness and Closure Plan');
+    table(
+      ['Closure Item', 'Expected Evidence', 'Owner Action'],
+      [
+        ['Finding fixed', 'Before/after request, screenshot, config diff, or patch reference', 'Attach evidence to ticket and mark ready for retest'],
+        ['Exposure reduced', 'Port closed, firewall rule, allowlist, or service owner exception', 'Validate from external network'],
+        ['Header/TLS hardened', 'HTTP response headers, TLS scan output, certificate metadata', 'Confirm staging and production parity'],
+        ['Risk accepted', 'Business owner sign-off with expiry date and compensating control', 'Review acceptance before expiry']
+      ],
+      { widths: [42, 78, 62], size: 6.7 }
+    );
+    callout(
+      'Final Assessment Note',
+      'A strong report is only valuable when it becomes a closure loop. The recommended operating model is: fix, retest, attach evidence, document residual risk, and repeat on a scheduled cadence.',
+      C.good
+    );
+
+    section('15', 'Appendix - Raw Evidence Index');
+    rawBlock('Risk summary', riskSummary);
+    rawBlock('Attack explanation', attackExplanation);
+    rawBlock('Web analysis', webAnalysis);
+    rawBlock('SSL analysis', sslAnalysis);
+    rawBlock('OSINT summary', osint);
+    rawBlock('Subdomain enumeration summary', subdomainEnum);
+    rawBlock('Port scan summary', portScan);
+
+    section('16', 'Appendix - Standards and Severity Model');
+    table(
+      ['Reference', 'How It Is Used'],
+      [
+        ['OWASP WSTG', 'Report structure, evidence quality, remediation-focused technical detail.'],
+        ['PTES', 'Executive and technical audience split, clear finding ownership and prioritization.'],
+        ['NIST SP 800-115', 'Planning, execution, analysis, and reporting lifecycle for assessments.'],
+        ['CVSS / FIRST', 'Severity language and impact/exploitability context where CVSS is available.'],
+        ['CISA KEV', 'Known exploited vulnerability priority context when CVE enrichment is present.']
+      ],
+      { widths: [42, 140], size: 6.9 }
+    );
+    kv([
+      ['Critical', 'Immediate business or technical exposure. Fix or mitigate urgently, normally within 7 days.'],
+      ['High', 'Realistic exploitation path or serious control failure. Fix within 7-30 days.'],
+      ['Medium', 'Meaningful weakness that depends on preconditions or chaining. Fix within 30-60 days.'],
+      ['Low', 'Hardening gap or limited direct impact. Fix within planned security maintenance.']
+    ]);
+
+    footer();
+    const cleanTarget = safeString(target, 'report').replace(/[^a-zA-Z0-9_-]/g, '_');
+    doc.save(`WHITENX-Worldwide-Pentest-Report-${cleanTarget}-${Date.now()}.pdf`);
+    return true;
+  } catch (error) {
+    console.error('generateWorldWidePentestPDF: failed to create PDF', error);
+    return false;
+  }
+};
+
 const Dashboard = ({ onSessionExpire }) => {
   const [domain,      setDomain]      = useState('');
   const [result,      setResult]      = useState(null);
@@ -2357,6 +3681,10 @@ const Dashboard = ({ onSessionExpire }) => {
   const timersRef    = useRef([]);
   const progRef      = useRef(null);
   const scanAbortRef = useRef(null);
+  const websocketRef = useRef(null);
+  const wsTimeoutRef = useRef(null);
+  const scanIdRef    = useRef(null);
+  const fallbackRef  = useRef(false);
   const idleLockRef  = useRef(false);
 
   const isValidDomain = (input) => {
@@ -2409,61 +3737,355 @@ const Dashboard = ({ onSessionExpire }) => {
     return()=>{ window.removeEventListener('contextmenu',blockAction); document.removeEventListener('copy',blockAction); document.removeEventListener('visibilitychange',handleVis); window.removeEventListener('keydown',blockKey); };
   },[]);
 
+  const normalizeScanPayload = useCallback((payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
+    if (payload.result && typeof payload.result === 'object' && !Array.isArray(payload.result)) {
+      return payload.result;
+    }
+    return payload;
+  }, []);
+
+  const clearScanTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    if (progRef.current) {
+      clearInterval(progRef.current);
+      progRef.current = null;
+    }
+  }, []);
+
+  const clearWsTimeout = useCallback(() => {
+    if (wsTimeoutRef.current) {
+      clearTimeout(wsTimeoutRef.current);
+      wsTimeoutRef.current = null;
+    }
+  }, []);
+
+  const closeRealtimeSocket = useCallback(() => {
+    clearWsTimeout();
+    const socket = websocketRef.current;
+    websocketRef.current = null;
+    if (!socket) return;
+    socket.onopen = null;
+    socket.onmessage = null;
+    socket.onerror = null;
+    socket.onclose = null;
+    if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+      try {
+        socket.close();
+      } catch (error) {
+        logger.debug('WebSocket close ignored', error);
+      }
+    }
+  }, [clearWsTimeout]);
+
+  useEffect(() => () => {
+    if (scanAbortRef.current) scanAbortRef.current.abort();
+    clearScanTimers();
+    closeRealtimeSocket();
+  }, [clearScanTimers, closeRealtimeSocket]);
+
   const handleScan = async () => {
     if(!domain.trim()){ setErr('❌ Target field is empty — enter a domain or IP address'); setDomainValid(false); return; }
     if(!isValidDomain(domain)){ setErr('❌ Invalid format — ensure domain is typed correctly.'); setDomainValid(false); return; }
+    clearScanTimers();
+    closeRealtimeSocket();
+    fallbackRef.current = false;
+    scanIdRef.current = null;
     setErr('');setResult(null);setLiveRes(null);setJsonData(null);setApiDone(false);
     setScanning(true);setSI(0);setProg(0);
     const scanStart=Date.now();
-    const minScanMs=330000;
     scanAbortRef.current=new AbortController();
 
     if('Notification' in window&&Notification.permission==='default') await Notification.requestPermission();
 
-    const dur=[45000,42000,42000,43000,42000,38000,35000];
-    let cum=0;
-    timersRef.current=dur.map((d,i)=>{ const t=setTimeout(()=>setSI(i),cum); cum+=d; return t; });
-    progRef.current=setInterval(()=>setProg(p=>p>=84?84:+(p+0.087).toFixed(3)),250);
-
     try {
-      const res=await fetch(`${API_BASE}/scan/full?target=${domain}`,{method:'GET',headers:{'Accept':'application/json','x-access-token':ACCESS_KEY},signal:scanAbortRef.current?.signal});
-      if(!res.ok) throw new Error(`Scan failed: ${res.status}`);
-      const data=await res.json();
-      timersRef.current.forEach(clearTimeout);
-      clearInterval(progRef.current);
-      setSI(6);setProg(90);setApiDone(true);setLiveRes(data);setLastActivity(Date.now());
+      const startFallbackProgress = () => {
+        clearScanTimers();
+        const dur=[45000,42000,42000,43000,42000,38000,35000];
+        let cum=0;
+        timersRef.current=dur.map((d,i)=>{
+          const t=setTimeout(()=>setSI(prev=>Math.max(prev,i)),cum);
+          cum+=d;
+          return t;
+        });
+        progRef.current=setInterval(()=>setProg(p=>p>=92?92:+(p+0.087).toFixed(3)),250);
+      };
 
-      if('Notification' in window&&Notification.permission==='granted'){
-        const v=data.vulnerabilities||[];
-        new Notification('⚡ WHITENX — Scan Complete',{body:`Target: ${domain}\n${v.filter(x=>x.severity==='CRITICAL').length} Critical  ${v.filter(x=>x.severity==='HIGH').length} High`,tag:'whitenx-scan',requireInteraction:true});
-      }
+      const wait = (ms) => new Promise((resolve) => {
+        const t = setTimeout(resolve, ms);
+        timersRef.current.push(t);
+      });
 
-      const remaining=Math.max(0,minScanMs-(Date.now()-scanStart));
-      const ct=setTimeout(()=>{ setScanning(false);setJsonData(data);setResult(data);scanAbortRef.current=null; },Math.max(4200,remaining));
-      timersRef.current.push(ct);
+      const fetchScanStatus = async (scanId) => {
+        const res = await fetch(`${API_BASE}/status/${scanId}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'x-access-token': ACCESS_KEY
+          },
+          signal: scanAbortRef.current?.signal
+        });
+        if (!res.ok) throw new Error(`Status fetch failed: ${res.status}`);
+        return res.json();
+      };
+
+      const finalizeScan = (payload) => {
+        const data = normalizeScanPayload(payload);
+        if (!data) throw new Error('Final scan payload was empty');
+
+        clearScanTimers();
+        closeRealtimeSocket();
+        setSI(6);
+        setProg(100);
+        setApiDone(true);
+        setLiveRes(data);
+        setJsonData(data);
+        setResult(data);
+        setLastActivity(Date.now());
+
+        if('Notification' in window&&Notification.permission==='granted'){
+          const v=data.vulnerabilities||[];
+          new Notification('⚡ WHITENX — Scan Complete',{body:`Target: ${domain}\n${v.filter(x=>x.severity==='CRITICAL').length} Critical  ${v.filter(x=>x.severity==='HIGH').length} High`,tag:'whitenx-scan',requireInteraction:true});
+        }
+
+        const remaining=Math.max(0,2000-(Date.now()-scanStart));
+        const ct=setTimeout(()=>{
+          setScanning(false);
+          scanAbortRef.current=null;
+          scanIdRef.current=null;
+          fallbackRef.current=false;
+        },Math.max(400,remaining));
+        timersRef.current.push(ct);
+      };
+
+      const waitForFinalResult = async (scanId, attempts = 60, delayMs = 1000) => {
+        for (let attempt = 0; attempt < attempts; attempt += 1) {
+          if (scanAbortRef.current?.signal?.aborted) {
+            const abortError = new Error('Scan aborted');
+            abortError.name = 'AbortError';
+            throw abortError;
+          }
+
+          const statusPayload = await fetchScanStatus(scanId);
+          const normalized = normalizeScanPayload(statusPayload);
+          if (statusPayload.status === 'completed' && normalized) {
+            return normalized;
+          }
+
+          if (statusPayload.status === 'failed') {
+            throw new Error(statusPayload.error || 'Scan failed');
+          }
+
+          await wait(delayMs);
+        }
+
+        throw new Error('Timed out waiting for final scan results');
+      };
+
+      let scanFinished = false;
+
+      const startStatusPolling = async (scanId) => {
+        if (fallbackRef.current || scanFinished) return;
+        fallbackRef.current = true;
+        closeRealtimeSocket();
+        logger.warn(`Realtime updates unavailable for ${scanId}, switching to status polling`);
+        startFallbackProgress();
+
+        try {
+          const data = await waitForFinalResult(scanId, 240, 1500);
+          scanFinished = true;
+          finalizeScan(data);
+        } catch(e) {
+          clearScanTimers();
+          setErr(e.name==='AbortError'?'⚠ Scan cancelled.':(e.message||'Backend unavailable'));
+          setScanning(false);
+          scanAbortRef.current=null;
+          scanIdRef.current=null;
+          fallbackRef.current=false;
+        }
+      };
+
+      const resolveCompletedScan = async (scanId) => {
+        if (scanFinished) return;
+        try {
+          const data = await waitForFinalResult(scanId, 45, 500);
+          scanFinished = true;
+          finalizeScan(data);
+        } catch (error) {
+          logger.warn('Final status not ready yet, falling back to polling', error);
+          startStatusPolling(scanId);
+        }
+      };
+
+      // Initialize scan and get scan_id
+      const initRes = await fetch(`${API_BASE}/scan/init`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-access-token': ACCESS_KEY
+        },
+        body: JSON.stringify({ target: domain }),
+        signal: scanAbortRef.current?.signal
+      });
+
+      if(!initRes.ok) throw new Error(`Scan init failed: ${initRes.status}`);
+      const initData = await initRes.json();
+      const scanId = initData.scan_id;
+      scanIdRef.current = scanId;
+      
+      logger.info(`Scan initialized with ID: ${scanId}`);
+      setSI(1); setProg(5);
+
+      // Connect to WebSocket for real-time updates
+      const wsUrl = `${API_BASE.replace('https:', 'wss:').replace('http:', 'ws:')}/ws/scan/${scanId}?token=${encodeURIComponent(ACCESS_KEY)}`;
+      logger.info(`Connecting to WebSocket: ${wsUrl}`);
+      
+      let wsConnected = false;
+      const websocket = new WebSocket(wsUrl);
+      websocketRef.current = websocket;
+      
+      // Set a timeout for WebSocket connection
+      wsTimeoutRef.current = setTimeout(() => {
+        if (!wsConnected) {
+          logger.warn('WebSocket connection timeout, falling back to status polling');
+          startStatusPolling(scanId);
+        }
+      }, 5000); // 5 second timeout
+      
+      websocket.onopen = () => {
+        wsConnected = true;
+        clearWsTimeout();
+        logger.info(`WebSocket connected for scan ${scanId}`);
+        setProg(10);
+      };
+
+      websocket.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          logger.info(`WebSocket event: ${msg.event}`, msg.data);
+          
+          const eventType = msg.event;
+          
+          switch(eventType) {
+            case 'scan_started':
+              logger.info('Scan started');
+              setProg(15);
+              break;
+            case 'osint_started':
+              setSI(0);
+              break;
+            case 'osint_completed':
+              logger.info('OSINT completed');
+              setProg(20);
+              break;
+            case 'subdomain_enum_started':
+              setSI(1);
+              break;
+            case 'subdomain_enum_completed':
+              logger.info(`Subdomains found: ${msg.data.count}`);
+              setProg(30);
+              break;
+            case 'port_scan_started':
+              setSI(2);
+              setProg(35);
+              break;
+            case 'port_open':
+              logger.info(`Port ${msg.data.port} open (${msg.data.service})`);
+              setProg(p => Math.min(p + 0.5, 50));
+              break;
+            case 'port_scan_completed':
+              logger.info(`Port scan completed: ${msg.data.open_ports} ports open`);
+              setProg(55);
+              break;
+            case 'service_fingerprint_started':
+              setSI(3);
+              break;
+            case 'service_fingerprinted':
+              logger.info(`Service fingerprinted: ${msg.data.service} on port ${msg.data.port}`);
+              setProg(p => Math.min(p + 0.3, 65));
+              break;
+            case 'service_fingerprint_completed':
+              logger.info(`Service fingerprinting completed: ${msg.data.services} services`);
+              setProg(70);
+              break;
+            case 'cve_correlation_started':
+              setSI(4);
+              break;
+            case 'vulnerability_found':
+              logger.info(`Vulnerability found: ${msg.data.id || msg.data.type}`);
+              setProg(p => Math.min(p + 0.2, 75));
+              break;
+            case 'cve_correlation_completed':
+              logger.info(`CVE correlation completed: ${msg.data.cves_found} CVEs`);
+              setProg(78);
+              break;
+            case 'vuln_scan_started':
+              setSI(5);
+              break;
+            case 'vuln_scan_completed':
+              logger.info(`Vulnerability scan completed: ${msg.data.vulns_found} vulns`);
+              setProg(80);
+              break;
+            case 'ai_prediction_started':
+              setSI(6);
+              break;
+            case 'ai_prediction_completed':
+              logger.info(`AI predictions completed: ${msg.data.predictions} predictions`);
+              setProg(85);
+              break;
+            case 'scan_completed':
+              setSI(6);
+              setProg(95);
+              logger.info('Scan completed');
+              setApiDone(true);
+              resolveCompletedScan(scanId);
+              break;
+            default:
+              logger.debug(`Event: ${eventType}`, msg);
+          }
+        } catch(e) {
+          logger.error('WebSocket message parse error:', e);
+        }
+      };
+
+      websocket.onerror = (error) => {
+        logger.error('WebSocket error:', error);
+        startStatusPolling(scanId);
+      };
+
+      websocket.onclose = () => {
+        wsConnected = false;
+        logger.info('WebSocket closed');
+        if (!scanFinished && !scanAbortRef.current?.signal?.aborted) {
+          startStatusPolling(scanId);
+        }
+      };
+
     } catch(e){
-      timersRef.current.forEach(clearTimeout);
-      clearInterval(progRef.current);
+      clearScanTimers();
+      closeRealtimeSocket();
       setErr(e.name==='AbortError'?'⚠ Scan cancelled.':(e.message||'Backend unavailable'));
       setScanning(false);
       scanAbortRef.current=null;
+      scanIdRef.current=null;
+      fallbackRef.current=false;
     }
   };
 
   const handleCancelScan = useCallback(()=>{
     if(scanAbortRef.current) scanAbortRef.current.abort();
-    timersRef.current.forEach(clearTimeout);
-    timersRef.current=[];
-    if(progRef.current){ clearInterval(progRef.current); progRef.current=null; }
+    clearScanTimers();
+    closeRealtimeSocket();
     setScanning(false);setApiDone(false);setLiveRes(null);setJsonData(null);
-    setErr('⚠ Scan cancelled.');scanAbortRef.current=null;
-  },[]);
+    setErr('⚠ Scan cancelled.');scanAbortRef.current=null;scanIdRef.current=null;fallbackRef.current=false;
+  },[clearScanTimers,closeRealtimeSocket]);
 
-  const handleGenerateReport = useCallback(()=>{
+  const handleGenerateReport = useCallback(async ()=>{
     if(!result){ setReportError('No scan data available.'); return; }
     setReportError('');setReportSuccess(false);setReportLoading(true);
     try {
-      generatePDF(result);
+      await generateWorldWidePentestPDF(result);
       setReportSuccess(true);
       setTimeout(()=>setReportSuccess(false),5000);
     } catch(e){
