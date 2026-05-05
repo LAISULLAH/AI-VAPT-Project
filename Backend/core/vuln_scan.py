@@ -33,7 +33,7 @@ def vuln_scan(target: str, services: list):
     # BASELINE REQUEST
     # ------------------------
     try:
-        base_resp = requests.get(base_url, headers=HEADERS, timeout=6, verify=False)
+        base_resp = requests.get(base_url, headers=HEADERS, timeout=6, verify=True)
         base_status = base_resp.status_code
         base_len = len(base_resp.text)
     except Exception:
@@ -46,7 +46,7 @@ def vuln_scan(target: str, services: list):
     for param in COMMON_PARAMS:
         try:
             test_url = base_url + "?" + urlencode({param: sql_payload})
-            r = requests.get(test_url, headers=HEADERS, timeout=6, verify=False)
+            r = requests.get(test_url, headers=HEADERS, timeout=6, verify=True)
 
             if r.status_code == base_status and abs(len(r.text) - base_len) > 50:
                 results.append({
@@ -69,7 +69,7 @@ def vuln_scan(target: str, services: list):
     for param in COMMON_PARAMS:
         try:
             test_url = base_url + "?" + urlencode({param: xss_payload})
-            r = requests.get(test_url, headers=HEADERS, timeout=6, verify=False)
+            r = requests.get(test_url, headers=HEADERS, timeout=6, verify=True)
 
             if xss_payload.lower() in r.text.lower():
                 results.append({
@@ -92,7 +92,7 @@ def vuln_scan(target: str, services: list):
     for param in ["page", "file", "path"]:
         try:
             test_url = base_url + "?" + urlencode({param: lfi_payload})
-            r = requests.get(test_url, headers=HEADERS, timeout=6, verify=False)
+            r = requests.get(test_url, headers=HEADERS, timeout=6, verify=True)
 
             if "root:x" in r.text.lower():
                 results.append({

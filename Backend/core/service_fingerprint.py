@@ -105,12 +105,12 @@ class ServiceFingerprinter:
             protocol = 'https' if port in [443, 8443] else 'http'
             url = f"{protocol}://{ip}:{port}"
             
-            # Configure SSL context for HTTPS
+            # Configure SSL context for HTTPS with certificate validation
             ssl_context = None
             if protocol == 'https':
                 ssl_context = ssl.create_default_context()
-                ssl_context.check_hostname = False
-                ssl_context.verify_mode = ssl.CERT_NONE
+                ssl_context.check_hostname = True
+                ssl_context.verify_mode = ssl.CERT_REQUIRED
             
             async with aiohttp.ClientSession() as session:
                 try:

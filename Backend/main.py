@@ -5,14 +5,20 @@ import re
 import socket
 import asyncio
 from datetime import datetime, timedelta
+from typing import Callable
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Body, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 import json
 
-from core.scan_manager import SCAN_STORE, start_scan, run_scan, EVENT_STORE, set_event_broadcaster
+# Load environment variables from .env file
+load_dotenv()
+
+from core.scan_manager import SCAN_STORE, start_scan, run_scan, EVENT_STORE, set_event_broadcaster, periodic_cleanup
 
 try:
     from core.pdf_generator import generate_pdf_report
@@ -24,7 +30,51 @@ except ModuleNotFoundError as exc:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ============== AUTHENTICATION SETUP ==============
+# Load API Secret from environment (REQUIRED for production)
+API_SECRET = os.getenv('AI_VAPT_API_SECRET', '').strip()
+if not API_SECRET:
+    logger.error("❌ CRITICAL: AI_VAPT_API_SECRET not set! Copy .env.example to .env and set a strong secret!")
+    logger.error("   Your API is currently EXPOSED to the public!")
+    raise RuntimeError(
+        "API_SECRET environment variable is required. "
+        "Copy .env.example to .env, set a strong secret, and restart."
+    )
+
+logger.info("✅ API_SECRET loaded successfully. API is protected.")
+
 app = FastAPI(title="AI VAPT API", version="1.0")
+
+# ============== GLOBAL AUTH MIDDLEWARE ==============
+class AuthMiddleware(BaseHTTPMiddleware):
+    """Global middleware to require API key on all endpoints except /health and /"""
+    
+    PUBLIC_PATHS = {"/", "/health", "/docs", "/openapi.json", "/redoc"}
+    
+    async def dispatch(self, request: Request, call_next: Callable):
+        # Allow public paths without auth
+        if request.url.path in self.PUBLIC_PATHS:
+            return await call_next(request)
+        
+        # Check for API key in headers or query params
+        token = (
+            request.headers.get("x-access-token", "").strip() or
+            request.headers.get("x-api-key", "").strip() or
+            request.query_params.get("token", "").strip() or
+            request.query_params.get("api_key", "").strip()
+        )
+        
+        if not token or token != API_SECRET:
+            logger.warning(f"Unauthorized access attempt from {request.client.host} to {request.url.path}")
+            raise HTTPException(
+                status_code=401,
+                detail="Unauthorized: Invalid or missing API key. Use 'x-api-key' or 'x-access-token' header."
+            )
+        
+        return await call_next(request)
+
+# Add auth middleware before CORS
+app.add_middleware(AuthMiddleware)
 
 # ---------------- Server-Sent Events (SSE) Endpoints ----------------
 @app.get("/events/{scan_id}")
@@ -80,26 +130,40 @@ async def test_sse():
         }
     )
 
-# ---------------- CORS ----------------
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://laisullah.github.io",
-]
+# ---------------- CORS CONFIGURATION ----------------
+# Load CORS origins from environment or use defaults
+cors_origins_str = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,https://laisullah.github.io')
+origins = [origin.strip() for origin in cors_origins_str.split(',')]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],  # Restrict to necessary methods only
+    allow_headers=["Content-Type", "x-access-token", "x-api-key"],  # Restrict to necessary headers
+    allow_credentials=True,
+    max_age=3600,  # Cache preflight response for 1 hour
 )
 
-API_SECRET = os.getenv('AI_VAPT_API_SECRET', '')
+logger.info(f"CORS origins allowed: {origins}")
+
+# ============== RATE LIMITING ==============
 RATE_LIMIT_WINDOW = timedelta(minutes=1)
 HOURLY_RATE_WINDOW = timedelta(hours=1)
 RATE_LIMIT_MAX = 8
 HOURLY_RATE_MAX = 20
 ACCESS_LOG = {}
+
+# ============== PRIVATE IP RANGES ==============
+# Private IP ranges to block (RFC 1918 + special ranges)
+PRIVATE_IP_RANGES = [
+    ipaddress.ip_network('10.0.0.0/8'),       # Private
+    ipaddress.ip_network('172.16.0.0/12'),    # Private
+    ipaddress.ip_network('192.168.0.0/16'),   # Private
+    ipaddress.ip_network('127.0.0.0/8'),      # Loopback
+    ipaddress.ip_network('169.254.0.0/16'),   # Link-local
+    ipaddress.ip_network('224.0.0.0/4'),      # Multicast
+    ipaddress.ip_network('240.0.0.0/4'),      # Reserved
+]
 
 HOSTNAME_REGEX = re.compile(r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$')
 
@@ -110,7 +174,12 @@ def is_valid_target(target: str) -> bool:
     if len(target) < 3 or len(target) > 253:
         return False
     try:
-        ipaddress.ip_address(target)
+        ip = ipaddress.ip_address(target)
+        # Reject private IP addresses
+        for private_range in PRIVATE_IP_RANGES:
+            if ip in private_range:
+                logger.warning(f"Attempted scan of private IP: {target}")
+                return False
         return True
     except ValueError:
         pass
@@ -160,11 +229,7 @@ def verify_request(request: Request, target: str):
     client_ip = request.client.host if request.client else 'unknown'
     enforce_rate_limit(client_ip)
 
-    if API_SECRET:
-        token = request.headers.get('x-access-token', '') or request.headers.get('x-api-key', '')
-        if token != API_SECRET:
-            raise HTTPException(status_code=401, detail='Invalid authentication token')
-
+    # API authentication is now handled by global AuthMiddleware
     logger.info(f'Request from {client_ip} validated for target {target}')
 
 # -------- WebSocket Connection Manager --------
@@ -212,12 +277,11 @@ logger.info("Event broadcaster set up successfully")
 
 
 def websocket_authorized(websocket: WebSocket) -> bool:
-    if not API_SECRET:
-        return True
+    """Validate WebSocket auth token"""
     token = (
-        websocket.query_params.get("token", "")
-        or websocket.headers.get("x-access-token", "")
-        or websocket.headers.get("x-api-key", "")
+        websocket.query_params.get("token", "").strip() or
+        websocket.headers.get("x-access-token", "").strip() or
+        websocket.headers.get("x-api-key", "").strip()
     )
     return token == API_SECRET
 
@@ -388,6 +452,14 @@ def download_pdf_report(scan_id: str):
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+
+# -------- Startup Event --------
+@app.on_event("startup")
+async def startup_event():
+    """Start background cleanup task on app startup"""
+    logger.info("Starting periodic cleanup task...")
+    asyncio.create_task(periodic_cleanup())
 
 
 # ---------------- Health ----------------

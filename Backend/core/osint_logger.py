@@ -96,15 +96,17 @@ class OSINTCollector:
         return self.results
     
     def _create_ssl_context(self):
-        """Create SSL context"""
+        """Create SSL context with certificate validation enabled"""
         try:
             import certifi
             ssl_context = ssl.create_default_context(cafile=certifi.where())
-        except:
+        except ImportError:
+            logger.warning("certifi not found, using system CA bundle")
             ssl_context = ssl.create_default_context()
         
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
+        # Enable certificate validation (secure by default)
+        ssl_context.check_hostname = True
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
         return ssl_context
     
     def _clean_target(self, target: str) -> str:

@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List
 import logging
 import ssl
@@ -23,8 +23,51 @@ from core.attack_surface_mapper import AttackSurfaceMapper
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Data stores with TTL tracking
 SCAN_STORE: Dict[str, Dict] = {}
 EVENT_STORE: Dict[str, List[Dict]] = {}
+SCAN_TIMESTAMPS: Dict[str, datetime] = {}  # Track when scans were created
+EVENT_TIMESTAMPS: Dict[str, datetime] = {}  # Track when event stores were created
+
+# Configuration for cleanup (24 hours for scans, 12 hours for events)
+SCAN_TTL = timedelta(hours=24)
+EVENT_TTL = timedelta(hours=12)
+
+def cleanup_expired_scans():
+    """Remove scans that have exceeded TTL"""
+    now = datetime.now()
+    expired_scans = [
+        scan_id for scan_id, timestamp in SCAN_TIMESTAMPS.items()
+        if now - timestamp > SCAN_TTL
+    ]
+    for scan_id in expired_scans:
+        SCAN_STORE.pop(scan_id, None)
+        SCAN_TIMESTAMPS.pop(scan_id, None)
+        logger.info(f"Cleaned up expired scan: {scan_id}")
+    return len(expired_scans)
+
+def cleanup_expired_events():
+    """Remove event stores that have exceeded TTL"""
+    now = datetime.now()
+    expired_events = [
+        event_id for event_id, timestamp in EVENT_TIMESTAMPS.items()
+        if now - timestamp > EVENT_TTL
+    ]
+    for event_id in expired_events:
+        EVENT_STORE.pop(event_id, None)
+        EVENT_TIMESTAMPS.pop(event_id, None)
+        logger.info(f"Cleaned up expired events: {event_id}")
+    return len(expired_events)
+
+async def periodic_cleanup():
+    """Periodically clean up expired data (run every 30 minutes)"""
+    while True:
+        try:
+            await asyncio.sleep(1800)  # 30 minutes
+            cleanup_expired_scans()
+            cleanup_expired_events()
+        except Exception as e:
+            logger.error(f"Cleanup task failed: {e}")
 
 # Global event broadcaster (will be set from main.py)
 _event_broadcaster = None
@@ -42,9 +85,10 @@ async def emit_event(scan_id: str, event_type: str, data: any = None):
         "data": data
     }
     
-    # Store event
+    # Store event with timestamp tracking
     if scan_id not in EVENT_STORE:
         EVENT_STORE[scan_id] = []
+        EVENT_TIMESTAMPS[scan_id] = datetime.now()  # Track creation time
     EVENT_STORE[scan_id].append(event)
     
     logger.info(f"Emitting event: {event_type} for scan {scan_id}")
@@ -423,12 +467,13 @@ class EnhancedScanManager:
             
             try:
                 ssl_context = ssl_module.create_default_context()
-                ssl_context.check_hostname = False
-                ssl_context.verify_mode = ssl_module.CERT_NONE
+                # SSL verification enabled for secure communication
+                ssl_context.check_hostname = True
+                ssl_context.verify_mode = ssl_module.CERT_REQUIRED
                 
                 connector = aiohttp.TCPConnector(ssl=ssl_context)
                 async with aiohttp.ClientSession(connector=connector) as session:
-                    async with session.get(url, timeout=10, allow_redirects=True, ssl=False) as resp:
+                    async with session.get(url, timeout=10, allow_redirects=True, ssl=ssl_context) as resp:
                         headers = dict(resp.headers)
                         web_info["headers"] = headers
                         web_info["status_code"] = resp.status
@@ -535,7 +580,8 @@ class EnhancedScanManager:
                                 if "angular" in text_lower:
                                     result["technologies"].append("angular")
                                     web_info["technologies_found"].append("angular")
-                            except:
+                            except (AttributeError, TypeError, ValueError) as e:
+                                logger.debug(f"Failed to parse technology markers: {e}")
                                 pass
                         
             except aiohttp.ClientError as e:
@@ -584,10 +630,10 @@ class EnhancedScanManager:
             }
             
             try:
-                # Create SSL context
+                # Create SSL context with certificate validation enabled
                 context = ssl_module.create_default_context()
-                context.check_hostname = False
-                context.verify_mode = ssl_module.CERT_NONE
+                context.check_hostname = True
+                context.verify_mode = ssl_module.CERT_REQUIRED
                 
                 # Establish SSL connection
                 with socket.create_connection((target, port), timeout=10) as sock:
@@ -897,6 +943,7 @@ def start_scan(target: str):
         "status": "running",
         "start_time": datetime.now().isoformat()
     }
+    SCAN_TIMESTAMPS[scan_id] = datetime.now()  # Track creation time
     return scan_id
 
 async def run_scan(scan_id: str, target: str):

@@ -169,7 +169,7 @@ def _check(sub, domain, session, timeout):
                 url,
                 timeout=timeout,
                 allow_redirects=True,
-                verify=False,
+                verify=True,
                 headers={"User-Agent": "AI-VAPT-Scanner"}
             )
             latency = int((time.time() - start) * 1000)
